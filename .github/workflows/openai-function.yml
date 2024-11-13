@@ -38,7 +38,7 @@ jobs:
           }
 
           response = openai.ChatCompletion.create(
-              model='gpt-4-0613',
+              model='gpt-4o-mini',
               messages=[
                   {'role': 'user', 'content': 'Retrieve task status.'}
               ],
