@@ -3,24 +3,34 @@
 ## Operation Order (OPORD) - Status Check Implementation
 
 ### 1. SITUATION
-   - The purpose of this operation is to establish full agent orchestration within PR-CYBR by initiating a status check to all agents, ensuring their ability to respond effectively.
+   - Current challenges include sporadic operational readiness reporting across agents, which can lead to delayed responses during critical situations. A coordinated status check is necessary to standardize reporting and improve overall agent orchestration across the PR-CYBR initiative.
 
 ### 2. MISSION
-   - Conduct a status check across all PR-CYBR agents to verify their operational readiness and ability to respond with success or failure messages.
+   - To trigger a comprehensive status check across all PR-CYBR agents, confirming their operational readiness and systematically identifying areas needing attention, culminating in a real-time notification of status via the Zapier webhook to Slack.
 
 ### 3. EXECUTION
 #### a. Concept of Operations
-   - The status check will be initiated through the PR-CYBR-MGMT-AGENT, which will coordinate communication among all agents.
+   - A function within the PR-CYBR-MGMT-AGENT will initiate status checks, triggering workflows in all respective agent repositories to collect status reports.
 
 #### b. Instructions
-   - Develop a standardized message format for sending status check requests to each agent.
-   - Implement a schedule for conducting regular status checks (e.g., daily or weekly).
-   - Collect responses from each agent and categorize them as "Success" or "Fail."
-   - Aggregate the collected data and prepare a comprehensive report on agent status.
+   - **Develop a function** in the PR-CYBR-MGMT-AGENT that:
+     - Makes API calls to each agent's GitHub repository to trigger their status check workflows.
+   - **Specify the API endpoints** for each agent's workflow located at:
+     - `PR-CYBR-MGMT-AGENT`: [Link](https://github.com/PR-CYBR/PR-CYBR-MGMT-AGENT/tree/main/.github/workflows)
+     - `PR-CYBR-CI-CD-AGENT`: [Link](https://github.com/PR-CYBR/PR-CYBR-CI-CD-AGENT/tree/main/.github/workflows)
+     - `PR-CYBR-DATA-INTEGRATION-AGENT`: [Link](https://github.com/PR-CYBR/PR-CYBR-DATA-INTEGRATION-AGENT/tree/main/.github/workflows)
+     - `PR-CYBR-USER-FEEDBACK-AGENT`: [Link](https://github.com/PR-CYBR/PR-CYBR-USER-FEEDBACK-AGENT/tree/main/.github/workflows)
+   - **Document the expected responses** format which includes:
+     - Success: Confirming operational status.
+     - Fail: Indicating issues.
+   - **Create logic** to aggregate responses into a comprehensive report summarizing each agent's status.
+   - **Trigger the Zapier webhook** to send a real-time notification to Slack upon completion detailing the operational status of all agents.
+   - **Schedule the execution** of these checks regularly using cron jobs or equivalent scheduling methods.
 
 ### 4. COORDINATION
-   - Collaborate with the PR-CYBR-CI-CD-AGENT to automate the status check execution within CI/CD pipelines.
-   - Ensure proper communication with the PR-CYBR-DATA-INTEGRATION-AGENT to facilitate effective data flow and response collection.
+   - Establish communication protocols to ensure all agents receive status requests and confirm responsiveness.
+   - Define roles for reviewing and addressing discrepancies reported by agents during status checks.
 
 ### 5. SERVICE SUPPORT
-   - Remain available for consultation and support to other agents regarding the status check process and reporting.
+   - Set up a support channel for troubleshooting agent responsiveness and address any operational hurdles encountered during the status check process.
+   - Provide documentation and training material on the status check process for reference, making it accessible to all agents.
