@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# Script to provision backend files & directories for PR-CYBR Agents with local deployment setup
-
 # Introduction
 echo "Welcome to the PR-CYBR Agent Setup Wizard!"
 echo "This script will guide you through setting up your local development environment."
@@ -9,7 +7,72 @@ echo "This script will guide you through setting up your local development envir
 # Get the repository name from the current working directory
 REPO_NAME=$(basename "$PWD")
 
+# Function to check if a command exists
+command_exists() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+# Check for Docker
+if ! command_exists docker; then
+  echo "Docker is not installed. It is required for this setup."
+  read -p "Would you like to install Docker? (y/n): " install_docker
+  if [ "$install_docker" == "y" ]; then
+    echo "Installing Docker..."
+    # Add Docker installation commands here
+  else
+    echo "Docker installation is required to proceed. Exiting."
+    exit 1
+  fi
+else
+  echo "Docker is already installed."
+fi
+
+# Check for Docker Compose
+if ! command_exists docker-compose; then
+  echo "Docker Compose is not installed. It is required for this setup."
+  read -p "Would you like to install Docker Compose? (y/n): " install_compose
+  if [ "$install_compose" == "y" ]; then
+    echo "Installing Docker Compose..."
+    # Add Docker Compose installation commands here
+  else
+    echo "Docker Compose installation is required to proceed. Exiting."
+    exit 1
+  fi
+else
+  echo "Docker Compose is already installed."
+fi
+
+# Check for Lynis
+if ! command_exists lynis; then
+  echo "Lynis is not installed. It is recommended for a security scan."
+  read -p "Would you like to install Lynis? (y/n): " install_lynis
+  if [ "$install_lynis" == "y" ]; then
+    echo "Installing Lynis..."
+    # Add Lynis installation commands here
+  else
+    echo "Skipping Lynis installation."
+  fi
+else
+  echo "Lynis is already installed."
+fi
+
+# Function to display a loading animation
+loading_animation() {
+  local pid=$1
+  local delay=0.1
+  local spinstr='|/-\'
+  while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
+    local temp=${spinstr#?}
+    printf " [%c]  " "$spinstr"
+    local spinstr=$temp${spinstr%"$temp"}
+    sleep $delay
+    printf "\b\b\b\b\b\b"
+  done
+  printf "    \b\b\b\b"
+}
+
 # Prompt for user inputs
+echo "Step 4: Gathering configuration details..."
 read -p "Enter your API Key: " API_KEY
 read -p "Enter your email (if applicable): " EMAIL
 read -s -p "Enter your password (if applicable): " PASSWORD
@@ -22,6 +85,7 @@ COMMON_FILES=("README.md" ".gitignore" "requirements.txt" "setup.py" "Dockerfile
 
 # Function to create directories
 create_directories() {
+  echo "Step 5: Creating directories..."
   for dir in "${COMMON_DIRS[@]}"; do
     if [ ! -d "$dir" ]; then
       mkdir "$dir"
@@ -34,6 +98,7 @@ create_directories() {
 
 # Function to create files
 create_files() {
+  echo "Step 6: Creating files..."
   for file in "${COMMON_FILES[@]}"; do
     if [ ! -f "$file" ]; then
       touch "$file"
@@ -46,7 +111,7 @@ create_files() {
 
 # Function to setup local deployment configurations
 setup_local_deployment() {
-  echo "Setting up local deployment for $REPO_NAME..."
+  echo "Step 7: Setting up local deployment for $REPO_NAME..."
 
   # Add a default requirements.txt
   cat > requirements.txt <<EOL
@@ -128,6 +193,7 @@ EOL
 
 # Function to customize repository-specific configurations
 customize_repo() {
+  echo "Step 8: Customizing repository-specific configurations..."
   case $REPO_NAME in
     PR-CYBR-USER-FEEDBACK-AGENT)
       echo "# Feedback Agent Configuration" > config/feedback_config.yaml
@@ -183,14 +249,43 @@ customize_repo() {
   esac
 }
 
+# Function to perform system updates
+perform_system_updates() {
+  echo "Step 9: Performing system updates and upgrades..."
+  read -p "Would you like to update and upgrade your system packages? (y/n): " update_system
+  if [ "$update_system" == "y" ]; then
+    echo "Updating system packages..."
+    sudo apt-get update && sudo apt-get upgrade -y &
+    loading_animation $!
+    echo "System packages updated."
+  else
+    echo "Skipping system updates."
+  fi
+}
+
+# Function to run Lynis security scan
+run_lynis_scan() {
+  echo "Step 10: Running Lynis security scan..."
+  if command_exists lynis; then
+    sudo lynis audit system &
+    loading_animation $!
+    echo "Lynis security scan completed."
+  else
+    echo "Lynis is not installed. Skipping security scan."
+  fi
+}
+
 # Main script execution
 echo "Provisioning backend and local deployment for repository: $REPO_NAME"
 create_directories
 create_files
 setup_local_deployment
 customize_repo
+perform_system_updates
+run_lynis_scan
 
 # Finalization
 echo "Provisioning completed for $REPO_NAME."
 echo "To start your application, run: docker-compose up"
 echo "Your application will be available at http://localhost:8000"
+echo "Thank you for using the PR-CYBR Agent Setup Wizard!"
