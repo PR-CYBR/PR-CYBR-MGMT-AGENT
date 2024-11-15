@@ -2,8 +2,19 @@
 
 # Script to provision backend files & directories for PR-CYBR Agents with local deployment setup
 
+# Introduction
+echo "Welcome to the PR-CYBR Agent Setup Wizard!"
+echo "This script will guide you through setting up your local development environment."
+
 # Get the repository name from the current working directory
 REPO_NAME=$(basename "$PWD")
+
+# Prompt for user inputs
+read -p "Enter your API Key: " API_KEY
+read -p "Enter your email (if applicable): " EMAIL
+read -s -p "Enter your password (if applicable): " PASSWORD
+echo
+read -p "Enter your OpenAI Assistant ID: " ASSISTANT_ID
 
 # Define common directories and files
 COMMON_DIRS=("config" "docs" "scripts" "src" "tests" "local_env")
@@ -81,6 +92,9 @@ services:
       - "8000:8000"
     volumes:
       - .:/app
+    environment:
+      - API_KEY=$API_KEY
+      - ASSISTANT_ID=$ASSISTANT_ID
     command: uvicorn src.main:app --host 0.0.0.0 --port 8000
 EOL
   echo "Added docker-compose.yml."
@@ -88,8 +102,11 @@ EOL
   # Add a local environment file
   cat > local_env/.env <<EOL
 # Local Environment Variables
-API_KEY=your_api_key_here
+API_KEY=$API_KEY
 DATABASE_URL=sqlite:///db.sqlite3
+EMAIL=$EMAIL
+PASSWORD=$PASSWORD
+ASSISTANT_ID=$ASSISTANT_ID
 EOL
   echo "Added local environment configuration (.env)."
 
@@ -173,4 +190,7 @@ create_files
 setup_local_deployment
 customize_repo
 
+# Finalization
 echo "Provisioning completed for $REPO_NAME."
+echo "To start your application, run: docker-compose up"
+echo "Your application will be available at http://localhost:8000"
