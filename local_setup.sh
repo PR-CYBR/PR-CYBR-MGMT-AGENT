@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Log file setup
+LOG_FILE="setup.log"
+exec > >(tee -i $LOG_FILE)
+exec 2>&1
+
 # Introduction
 echo "Welcome to the PR-CYBR Agent Setup Wizard!"
 echo "This script will guide you through setting up your local development environment."
@@ -42,250 +47,138 @@ else
   echo "Docker Compose is already installed."
 fi
 
-# Check for Lynis
-if ! command_exists lynis; then
-  echo "Lynis is not installed. It is recommended for a security scan."
-  read -p "Would you like to install Lynis? (y/n): " install_lynis
-  if [ "$install_lynis" == "y" ]; then
-    echo "Installing Lynis..."
-    # Add Lynis installation commands here
-  else
-    echo "Skipping Lynis installation."
-  fi
+# Create a Docker network for inter-container communication
+DOCKER_NETWORK="pr-cybr-network"
+if ! docker network ls | grep -q $DOCKER_NETWORK; then
+  echo "Creating Docker network: $DOCKER_NETWORK"
+  docker network create $DOCKER_NETWORK
 else
-  echo "Lynis is already installed."
+  echo "Docker network $DOCKER_NETWORK already exists."
 fi
 
-# Function to display a loading animation
-loading_animation() {
-  local pid=$1
-  local delay=0.1
-  local spinstr='|/-\'
-  while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-    local temp=${spinstr#?}
-    printf " [%c]  " "$spinstr"
-    local spinstr=$temp${spinstr%"$temp"}
-    sleep $delay
-    printf "\b\b\b\b\b\b"
-  done
-  printf "    \b\b\b\b"
+# Function to clone additional agent repositories
+clone_additional_repos() {
+  echo "Step 2: Cloning additional agent repositories..."
+  AGENT_REPOS=(
+    "PR-CYBR-MGMT-AGENT:https://github.com/PR-CYBR/PR-CYBR-MGMT-AGENT"
+    "PR-CYBR-DATA-INTEGRATION-AGENT:https://github.com/PR-CYBR/PR-CYBR-DATA-INTEGRATION-AGENT"
+    "PR-CYBR-DATABASE-AGENT:https://github.com/PR-CYBR/PR-CYBR-DATABASE-AGENT"
+    "PR-CYBR-FRONTEND-AGENT:https://github.com/PR-CYBR/PR-CYBR-FRONTEND-AGENT"
+    "PR-CYBR-BACKEND-AGENT:https://github.com/PR-CYBR/PR-CYBR-BACKEND-AGENT"
+    "PR-CYBR-PERFORMANCE-AGENT:https://github.com/PR-CYBR/PR-CYBR-PERFORMANCE-AGENT"
+    "PR-CYBR-SECURITY-AGENT:https://github.com/PR-CYBR/PR-CYBR-SECURITY-AGENT"
+    "PR-CYBR-TESTING-AGENT:https://github.com/PR-CYBR/PR-CYBR-TESTING-AGENT"
+    "PR-CYBR-CI-CD-AGENT:https://github.com/PR-CYBR/PR-CYBR-CI-CD-AGENT"
+    "PR-CYBR-USER-FEEDBACK-AGENT:https://github.com/PR-CYBR/PR-CYBR-USER-FEEDBACK-AGENT"
+    "PR-CYBR-DOCUMENTATION-AGENT:https://github.com/PR-CYBR/PR-CYBR-DOCUMENTATION-AGENT"
+    "PR-CYBR-INFRASTRUCTURE-AGENT:https://github.com/PR-CYBR/PR-CYBR-INFRASTRUCTURE-AGENT"
+  )
+
+  echo "Would you like to clone additional agent repositories?"
+  echo "1. Clone all remaining agents"
+  echo "2. Select specific agents to clone"
+  echo "3. Skip cloning"
+  read -p "Enter your choice (1/2/3): " clone_choice
+
+  if [ "$clone_choice" == "1" ]; then
+    for repo in "${AGENT_REPOS[@]}"; do
+      IFS=':' read -r name url <<< "$repo"
+      if [ "$name" != "$REPO_NAME" ]; then
+        echo "Cloning $name..."
+        git clone "$url" &
+        loading_animation $!
+      fi
+    done
+  elif [ "$clone_choice" == "2" ]; then
+    echo "Select agents to clone (separate numbers with spaces):"
+    for i in "${!AGENT_REPOS[@]}"; do
+      IFS=':' read -r name url <<< "${AGENT_REPOS[$i]}"
+      echo "$i. $name"
+    done
+    read -p "Enter your choices: " selected_agents
+    for index in $selected_agents; do
+      IFS=':' read -r name url <<< "${AGENT_REPOS[$index]}"
+      if [ "$name" != "$REPO_NAME" ]; then
+        echo "Cloning $name..."
+        git clone "$url" &
+        loading_animation $!
+      fi
+    done
+  else
+    echo "Skipping additional cloning."
+  fi
 }
 
-# Prompt for user inputs
-echo "Step 4: Gathering configuration details..."
-read -p "Enter your API Key: " API_KEY
-read -p "Enter your email (if applicable): " EMAIL
-read -s -p "Enter your password (if applicable): " PASSWORD
-echo
-read -p "Enter your OpenAI Assistant ID: " ASSISTANT_ID
-
-# Define common directories and files
-COMMON_DIRS=("config" "docs" "scripts" "src" "tests" "local_env")
-COMMON_FILES=("README.md" ".gitignore" "requirements.txt" "setup.py" "Dockerfile" "docker-compose.yml")
-
-# Function to create directories
-create_directories() {
-  echo "Step 5: Creating directories..."
-  for dir in "${COMMON_DIRS[@]}"; do
-    if [ ! -d "$dir" ]; then
-      mkdir "$dir"
-      echo "Created directory: $dir"
-    else
-      echo "Directory $dir already exists. Skipping."
+# Function to run setup for cloned repositories
+setup_cloned_repos() {
+  echo "Step 3: Setting up cloned repositories..."
+  for dir in */; do
+    if [ -d "$dir" ] && [ "$dir" != "$REPO_NAME/" ]; then
+      echo "Setting up $dir..."
+      (cd "$dir" && ./local_setup.sh) &
+      loading_animation $!
     fi
   done
 }
 
-# Function to create files
-create_files() {
-  echo "Step 6: Creating files..."
-  for file in "${COMMON_FILES[@]}"; do
-    if [ ! -f "$file" ]; then
-      touch "$file"
-      echo "Created file: $file"
-    else
-      echo "File $file already exists. Skipping."
-    fi
-  done
+# Function to check if a setup step has already been completed
+check_setup_step() {
+  local step_name=$1
+  grep -q "$step_name" setup.log
 }
 
-# Function to setup local deployment configurations
-setup_local_deployment() {
-  echo "Step 7: Setting up local deployment for $REPO_NAME..."
-
-  # Add a default requirements.txt
-  cat > requirements.txt <<EOL
-flask
-fastapi
-uvicorn
-requests
-pydantic
-EOL
-  echo "Added default dependencies to requirements.txt."
-
-  # Add a default Dockerfile
-  cat > Dockerfile <<EOL
-# Base Image
-FROM python:3.9-slim
-
-# Set the working directory
-WORKDIR /app
-
-# Copy files
-COPY . /app
-
-# Install dependencies
-RUN pip install --upgrade pip && pip install -r requirements.txt
-
-# Expose port
-EXPOSE 8000
-
-# Run the application
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
-EOL
-  echo "Added Dockerfile."
-
-  # Add a default docker-compose.yml
-  cat > docker-compose.yml <<EOL
-version: '3.8'
-
-services:
-  app:
-    build: .
-    container_name: ${REPO_NAME,,}-container
-    ports:
-      - "8000:8000"
-    volumes:
-      - .:/app
-    environment:
-      - API_KEY=$API_KEY
-      - ASSISTANT_ID=$ASSISTANT_ID
-    command: uvicorn src.main:app --host 0.0.0.0 --port 8000
-EOL
-  echo "Added docker-compose.yml."
-
-  # Add a local environment file
-  cat > local_env/.env <<EOL
-# Local Environment Variables
-API_KEY=$API_KEY
-DATABASE_URL=sqlite:///db.sqlite3
-EMAIL=$EMAIL
-PASSWORD=$PASSWORD
-ASSISTANT_ID=$ASSISTANT_ID
-EOL
-  echo "Added local environment configuration (.env)."
-
-  # Add default source file
-  if [ ! -f "src/main.py" ]; then
-    mkdir -p src
-    cat > src/main.py <<EOL
-from fastapi import FastAPI
-
-app = FastAPI()
-
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to $REPO_NAME"}
-EOL
-    echo "Added FastAPI starter in src/main.py."
-  fi
+# Function to mark a setup step as completed
+mark_setup_step() {
+  local step_name=$1
+  echo "$step_name completed" >> setup.log
 }
 
-# Function to customize repository-specific configurations
-customize_repo() {
-  echo "Step 8: Customizing repository-specific configurations..."
-  case $REPO_NAME in
-    PR-CYBR-USER-FEEDBACK-AGENT)
-      echo "# Feedback Agent Configuration" > config/feedback_config.yaml
-      echo "Added feedback agent-specific files."
-      ;;
-    PR-CYBR-DATA-INTEGRATION-AGENT)
-      echo "# Data Integration Agent Configuration" > config/data_integration.yaml
-      echo "Added data integration agent-specific files."
-      ;;
-    PR-CYBR-CI-CD-AGENT)
-      echo "# CI/CD Agent Configuration" > config/ci_cd_config.yaml
-      echo "Added CI/CD agent-specific files."
-      ;;
-    PR-CYBR-MGMT-AGENT)
-      echo "# Management Agent Configuration" > config/mgmt_config.yaml
-      echo "Added management agent-specific files."
-      ;;
-    PR-CYBR-MAP)
-      echo "# Map Configuration" > config/map_config.yaml
-      echo "Added map-specific files."
-      ;;
-    PR-CYBR-DATABASE-AGENT)
-      echo "# Database Agent Configuration" > config/db_config.yaml
-      echo "Added database agent-specific files."
-      ;;
-    PR-CYBR-DOCUMENTATION-AGENT)
-      echo "# Documentation Agent Configuration" > config/docs_config.yaml
-      echo "Added documentation agent-specific files."
-      ;;
-    PR-CYBR-FRONTEND-AGENT)
-      echo "# Frontend Agent Configuration" > config/frontend_config.yaml
-      echo "Added frontend agent-specific files."
-      ;;
-    PR-CYBR-INFRASTRUCTURE-AGENT)
-      echo "# Infrastructure Agent Configuration" > config/infrastructure_config.yaml
-      echo "Added infrastructure agent-specific files."
-      ;;
-    PR-CYBR-PERFORMANCE-AGENT)
-      echo "# Performance Agent Configuration" > config/performance_config.yaml
-      echo "Added performance agent-specific files."
-      ;;
-    PR-CYBR-SECURITY-AGENT)
-      echo "# Security Agent Configuration" > config/security_config.yaml
-      echo "Added security agent-specific files."
-      ;;
-    PR-CYBR-TESTING-AGENT)
-      echo "# Testing Agent Configuration" > config/testing_config.yaml
-      echo "Added testing agent-specific files."
-      ;;
-    *)
-      echo "Unknown repository type. No specific files added."
-      ;;
-  esac
-}
-
-# Function to perform system updates
-perform_system_updates() {
-  echo "Step 9: Performing system updates and upgrades..."
-  read -p "Would you like to update and upgrade your system packages? (y/n): " update_system
-  if [ "$update_system" == "y" ]; then
-    echo "Updating system packages..."
-    sudo apt-get update && sudo apt-get upgrade -y &
-    loading_animation $!
-    echo "System packages updated."
+# Function to provision a simple landing page
+provision_landing_page() {
+  echo "Step 4: Provisioning landing page..."
+  LANDING_PAGE_DIR="landing_page"
+  if [ ! -d "$LANDING_PAGE_DIR" ]; then
+    mkdir "$LANDING_PAGE_DIR"
+    echo "<html><body style='background-color:black; color:white; text-align:center;'><h1>Local Agent Deployment Success</h1></body></html>" > "$LANDING_PAGE_DIR/index.html"
+    echo "Landing page created at $LANDING_PAGE_DIR/index.html"
   else
-    echo "Skipping system updates."
-  fi
-}
-
-# Function to run Lynis security scan
-run_lynis_scan() {
-  echo "Step 10: Running Lynis security scan..."
-  if command_exists lynis; then
-    sudo lynis audit system &
-    loading_animation $!
-    echo "Lynis security scan completed."
-  else
-    echo "Lynis is not installed. Skipping security scan."
+    echo "Landing page already exists."
   fi
 }
 
 # Main script execution
 echo "Provisioning backend and local deployment for repository: $REPO_NAME"
-create_directories
-create_files
-setup_local_deployment
-customize_repo
-perform_system_updates
-run_lynis_scan
+
+# Check and perform each setup step only if not already completed
+if ! check_setup_step "Docker network setup"; then
+  # Create Docker network
+  if ! docker network ls | grep -q $DOCKER_NETWORK; then
+    echo "Creating Docker network: $DOCKER_NETWORK"
+    docker network create $DOCKER_NETWORK
+    mark_setup_step "Docker network setup"
+  else
+    echo "Docker network $DOCKER_NETWORK already exists."
+  fi
+fi
+
+if ! check_setup_step "Clone additional repos"; then
+  clone_additional_repos
+  mark_setup_step "Clone additional repos"
+fi
+
+if ! check_setup_step "Setup cloned repos"; then
+  setup_cloned_repos
+  mark_setup_step "Setup cloned repos"
+fi
+
+if ! check_setup_step "Provision landing page"; then
+  provision_landing_page
+  mark_setup_step "Provision landing page"
+fi
 
 # Finalization
 echo "Provisioning completed for $REPO_NAME."
 echo "To start your application, run: docker-compose up"
 echo "Your application will be available at http://localhost:8000"
+echo "Landing page available at $LANDING_PAGE_DIR/index.html"
 echo "Thank you for using the PR-CYBR Agent Setup Wizard!"
