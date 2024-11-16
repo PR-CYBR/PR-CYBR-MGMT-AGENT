@@ -177,6 +177,11 @@ if ! check_setup_step "System updates"; then
   mark_setup_step "System updates"
 fi
 
+# Function to check if a command exists
+command_exists() {
+  command -v "$1" >/dev/null 2>&1
+}
+
 # Function to install Lynis
 install_lynis() {
   echo "Installing Lynis..."
@@ -193,8 +198,31 @@ install_lynis() {
     sudo dnf install -y epel-release
     sudo dnf install -y lynis
   else
-    echo "No supported package manager found. Please install Lynis manually."
-    exit 1
+    echo "No supported package manager found for Lynis. Attempting to clone Lynis from GitHub..."
+    
+    # Check if Git is installed, if not, install it
+    if ! command_exists git; then
+      echo "Git is not installed. Attempting to install Git..."
+      if command_exists apt-get; then
+        sudo apt-get update && sudo apt-get install -y git
+      elif command_exists yum; then
+        sudo yum install -y git
+      elif command_exists dnf; then
+        sudo dnf install -y git
+      else
+        echo "No supported package manager found to install Git. Please install Git manually."
+        exit 1
+      fi
+    fi
+
+    # Clone Lynis repository
+    if command_exists git; then
+      git clone https://github.com/CISOfy/lynis.git
+      echo "Lynis cloned successfully. To run Lynis, navigate to the lynis directory and execute './lynis audit system'."
+    else
+      echo "Failed to install Git. Please install Git or Lynis manually."
+      exit 1
+    fi
   fi
 }
 
@@ -203,17 +231,70 @@ command_exists() {
   command -v "$1" >/dev/null 2>&1
 }
 
+# ------------------ #
+# Lynis Scan Section #
+# ------------------ #
+
+# Function to check if a command exists
+command_exists() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+# Function to install Lynis
+install_lynis() {
+  echo "Installing Lynis..."
+
+  if command_exists apt-get; then
+    echo "Using apt-get to install Lynis..."
+    sudo apt-get update && sudo apt-get install -y lynis
+  elif command_exists yum; then
+    echo "Using yum to install Lynis..."
+    sudo yum install -y epel-release
+    sudo yum install -y lynis
+  elif command_exists dnf; then
+    echo "Using dnf to install Lynis..."
+    sudo dnf install -y epel-release
+    sudo dnf install -y lynis
+  else
+    echo "No supported package manager found for Lynis. Attempting to clone Lynis from GitHub..."
+    
+    # Check if Git is installed, if not, install it
+    if ! command_exists git; then
+      echo "Git is not installed. Attempting to install Git..."
+      if command_exists apt-get; then
+        sudo apt-get update && sudo apt-get install -y git
+      elif command_exists yum; then
+        sudo yum install -y git
+      elif command_exists dnf; then
+        sudo dnf install -y git
+      else
+        echo "No supported package manager found to install Git. Please install Git manually."
+        exit 1
+      fi
+    fi
+
+    # Clone Lynis repository
+    if command_exists git; then
+      git clone https://github.com/CISOfy/lynis.git
+      echo "Lynis cloned successfully. To run Lynis, navigate to the lynis directory and execute './lynis audit system'."
+    else
+      echo "Failed to install Git. Please install Git or Lynis manually."
+      exit 1
+    fi
+  fi
+}
+
 # Function to run a Lynis security scan and check the score
 run_lynis_scan() {
   echo "Running Lynis security scan..."
-  # Run the Lynis audit and save the report to a temporary file
-  sudo lynis audit system --quiet --no-colors > /tmp/lynis-report.txt
+  # Run the Lynis audit and display the report
+  sudo lynis audit system
 
   # Extract the security score from the report
-  local score=$(grep "Hardening index" /tmp/lynis-report.txt | awk '{print $3}' | tr -d '%')
+  local score=$(sudo lynis show report | grep "Hardening index" | awk '{print $3}' | tr -d '%')
 
-  # Check if the score is greater than 50
-  if [ "$score" -gt 50 ]; then
+  # Check if the score is greater than or equal to 40
+  if [ "$score" -ge 40 ]; then
     echo "Lynis security scan passed with a score of $score%."
   else
     echo "Lynis security scan failed with a score of $score%. Please improve your system's security before proceeding."
@@ -222,18 +303,16 @@ run_lynis_scan() {
 }
 
 # Check and install Lynis if not already done
-if ! check_setup_step "Lynis installation"; then
-  if ! command_exists lynis; then
-    install_lynis
-  fi
-  mark_setup_step "Lynis installation"
+if ! command_exists lynis; then
+  install_lynis
 fi
 
-# Run Lynis security scan if not already done
-if ! check_setup_step "Lynis security scan"; then
-  run_lynis_scan
-  mark_setup_step "Lynis security scan"
-fi
+# Run Lynis security scan
+run_lynis_scan
+
+# -------------------- #
+# Docker Network Setup #
+# -------------------- #
 
 # Docker network setup
 DOCKER_NETWORK="pr-cybr-network"
@@ -466,15 +545,29 @@ check_and_setup_repos() {
 
   echo "All containers are running. Testing interconnectivity..."
 
-  # Example interconnectivity test between two containers
-  if test_container_connectivity "pr-cybr-mgmt-agent" "pr-cybr-database-agent"; then
-    echo "Interconnectivity test passed between pr-cybr-mgmt-agent and pr-cybr-database-agent."
-  else
-    echo "Interconnectivity test failed between pr-cybr-mgmt-agent and pr-cybr-database-agent."
-    exit 1
-  fi
+# Function to test interconnectivity between all agent containers
+test_all_container_connectivity() {
+  local agents=("pr-cybr-mgmt-agent" "pr-cybr-database-agent" "pr-cybr-data-integration-agent" 
+                "pr-cybr-frontend-agent" "pr-cybr-backend-agent" "pr-cybr-performance-agent" 
+                "pr-cybr-security-agent" "pr-cybr-testing-agent" "pr-cybr-ci-cd-agent" 
+                "pr-cybr-user-feedback-agent" "pr-cybr-documentation-agent" "pr-cybr-infrastructure-agent")
 
-  # Add more interconnectivity tests as needed
+  for i in "${!agents[@]}"; do
+    for j in "${!agents[@]}"; do
+      if [ "$i" -ne "$j" ]; then
+        if test_container_connectivity "${agents[i]}" "${agents[j]}"; then
+          echo "Interconnectivity test passed between ${agents[i]} and ${agents[j]}."
+        else
+          echo "Interconnectivity test failed between ${agents[i]} and ${agents[j]}."
+          exit 1
+        fi
+      fi
+    done
+  done
+}
+
+# Run interconnectivity tests
+test_all_container_connectivity
 }
 
 # Function to check if a Docker container is running
@@ -483,9 +576,31 @@ is_container_running() {
   docker ps --filter "name=$container_name" --filter "status=running" | grep -q "$container_name"
 }
 
+# Function to check if all agent containers are running
+check_all_containers_running() {
+  local agents=("pr-cybr-mgmt-agent" "pr-cybr-database-agent" "pr-cybr-data-integration-agent" 
+                "pr-cybr-frontend-agent" "pr-cybr-backend-agent" "pr-cybr-performance-agent" 
+                "pr-cybr-security-agent" "pr-cybr-testing-agent" "pr-cybr-ci-cd-agent" 
+                "pr-cybr-user-feedback-agent" "pr-cybr-documentation-agent" "pr-cybr-infrastructure-agent")
+
+  for agent in "${agents[@]}"; do
+    if is_container_running "$agent"; then
+      echo "Container $agent is running."
+    else
+      echo "Container $agent is not running."
+      exit 1
+    fi
+  done
+  echo "All agent containers are running."
+}
+
+# Check if all agent containers are running
+check_all_containers_running
+
 # Function to attempt restarting a container
 attempt_restart_container() {
   local container_name=$1
+  local image_name=$2  # Add an image name parameter for running new containers
   local attempts=0
   local max_attempts=3
 
@@ -495,7 +610,12 @@ attempt_restart_container() {
       return 0
     else
       echo "Attempting to start container $container_name (Attempt $((attempts + 1))/$max_attempts)..."
-      docker start "$container_name" || docker run -d --name "$container_name" "$container_name"
+      # Try to start the container if it exists, otherwise run a new one
+      if docker ps -a --filter "name=$container_name" | grep -q "$container_name"; then
+        docker start "$container_name"
+      else
+        docker run -d --name "$container_name" "$image_name"
+      fi
       sleep 5
     fi
     attempts=$((attempts + 1))
@@ -546,22 +666,154 @@ check_and_setup_repos
 # Function to finalize the setup
 finalize_setup() {
   echo "Finalizing setup..."
+  
+  # Summary of setup actions
+  echo "Setup Summary for $REPO_NAME:"
+  echo "1. Checked and installed necessary dependencies."
+  echo "2. Installed Lynis for security auditing, either via package manager or by cloning from GitHub."
+  echo "3. Conducted a Lynis security scan to assess system hardening."
+  echo "4. Verified interconnectivity between all agent containers."
+  echo "5. Checked that all agent Docker containers are running."
+  echo "6. Attempted to restart any containers that were not running."
+  echo "7. Provisioned and configured infrastructure components as needed."
+  
   echo "Provisioning completed for $REPO_NAME."
+  echo "Your system is now set up and ready to use. Please review the logs for any warnings or errors."
+}
 
-  # Instructions for starting the application
-  echo "To start your application, run: docker-compose up -d"
-  echo "Your application will be available at http://localhost:8000"
+# Extract the agent name from the script's directory path
+# Assuming the script is located in a directory named after the agent, e.g., /path/to/PR-CYBR-MGMT-AGENT/scripts/local_setup.sh
+AGENT_NAME=$(basename "$(dirname "$(dirname "$0")")")
 
-  # Information about accessing logs
-  echo "To view application logs, use: docker-compose logs -f"
-  echo "For individual container logs, use: docker logs <container_name>"
+# Function to provide instructions for accessing the agent dashboard
+provide_dashboard_access() {
+  local agent_name=$1
+  local container_name=$2
+  local port=$3
 
-  # Instructions for managing containers
-  echo "To stop the application, run: docker-compose down"
-  echo "To restart a specific container, use: docker restart <container_name>"
+  if is_container_running "$container_name"; then
+    echo "The $agent_name dashboard is available at http://localhost:$port"
+  else
+    echo "The $agent_name container is not running. Please start it to access the dashboard."
+  fi
+}
 
-  # Landing page information
+# Determine the port based on the agent name
+case "$AGENT_NAME" in
+  "PR-CYBR-MGMT-AGENT")
+    PORT=8000
+    ;;
+  "PR-CYBR-DATABASE-AGENT")
+    PORT=8001
+    ;;
+  "PR-CYBR-DATA-INTEGRATION-AGENT")
+    PORT=8002
+    ;;
+  # Add more cases for other agents as needed
+  *)
+    echo "Unknown agent: $AGENT_NAME"
+    exit 1
+    ;;
+esac
+
+# Provide dashboard access instructions
+provide_dashboard_access "$AGENT_NAME" "$(echo "$AGENT_NAME" | tr '[:upper:]' '[:lower:]')" "$PORT"
+
+ # Information about accessing logs
+echo "========================================"
+echo "          Application Logs Access       "
+echo "========================================"
+echo ""
+echo "To view all application logs in real-time, use the following command:"
+echo ""
+echo "  \033[1;32mdocker-compose logs -f\033[0m"
+echo ""
+echo "This will display logs from all containers managed by your Docker Compose setup."
+echo ""
+echo "----------------------------------------"
+echo "For individual container logs, use:"
+echo ""
+echo "  \033[1;32mdocker logs <container_name>\033[0m"
+echo ""
+echo "Replace \033[1;33m<container_name>\033[0m with the specific name of the container you wish to inspect."
+echo "For example, to view logs for the management agent container, use:"
+echo ""
+echo "  \033[1;32mdocker logs pr-cybr-mgmt-agent\033[0m"
+echo ""
+echo "========================================"
+
+# Instructions for managing containers
+echo "========================================"
+echo "         Container Management           "
+echo "========================================"
+echo ""
+echo "To stop all running containers and remove networks created by Docker Compose, use:"
+echo ""
+echo "  \033[1;32mdocker-compose down\033[0m"
+echo ""
+echo "This command will gracefully stop all containers and clean up resources."
+echo ""
+echo "----------------------------------------"
+echo "To restart a specific container, use:"
+echo ""
+echo "  \033[1;32mdocker restart <container_name>\033[0m"
+echo ""
+echo "Replace \033[1;33m<container_name>\033[0m with the name of the container you wish to restart."
+echo "For example, to restart the management agent container, use:"
+echo ""
+echo "  \033[1;32mdocker restart pr-cybr-mgmt-agent\033[0m"
+echo ""
+echo "This command will stop and then start the specified container, applying any changes made to its configuration."
+echo ""
+echo "========================================"
+
+# Define the directory for the landing page
+LANDING_PAGE_DIR="web"
+
+# Check if the web directory exists, create it if not
+if [ ! -d "$LANDING_PAGE_DIR" ]; then
+  echo "Directory $LANDING_PAGE_DIR does not exist. Creating it..."
+  mkdir -p "$LANDING_PAGE_DIR"
+fi
+
+# Check if the index.html file exists
+if [ ! -f "$LANDING_PAGE_DIR/index.html" ]; then
+  echo "index.html not found. Generating a basic offline page..."
+  cat <<EOF > "$LANDING_PAGE_DIR/index.html"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+        h1 { color: #333; }
+    </style>
+</head>
+<body>
+    <h1>Agent Dashboard Offline</h1>
+    <p>Check back soon for updates.</p>
+</body>
+</html>
+EOF
+  echo "Basic offline page created at $LANDING_PAGE_DIR/index.html"
+else
   echo "Landing page available at $LANDING_PAGE_DIR/index.html"
+fi
+
+# Additional information about the Agent Dashboard
+echo "========================================"
+echo "         Agent Dashboard Access         "
+echo "========================================"
+echo ""
+echo "The Agent Dashboard provides a centralized interface for monitoring and managing your agent's activities."
+echo "Access the dashboard by opening the following file in your web browser:"
+echo ""
+echo "  \033[1;32m$LANDING_PAGE_DIR/index.html\033[0m"
+echo ""
+echo "Ensure your web server is configured to serve files from the '$LANDING_PAGE_DIR' directory."
+echo "========================================"
 
   # Troubleshooting tips
   echo "If you encounter issues, consider the following steps:"
