@@ -17,20 +17,38 @@ command_exists() {
   command -v "$1" >/dev/null 2>&1
 }
 
-# Function to display a loading animation
-loading_animation() {
+# Function to display a loading room with ASCII art and status updates
+loading_room() {
   local pid=$1
-  local delay=0.1
+  local stages=("Initializing" "Installing Dependencies" "Configuring Environment" "Finalizing Setup")
+  local current_stage=0
+  local delay=0.5
   local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
   local i=0
+
+  # ASCII Art Banner
+  echo "========================================"
+  echo "          PR-CYBR Setup Wizard          "
+  echo "========================================"
+
   while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
     local spin_char=${spinstr:i++%${#spinstr}:1}
-    printf " [%s]  " "$spin_char"
+    printf "\r [%s] %s... " "$spin_char" "${stages[current_stage]}"
     sleep $delay
-    printf "\b\b\b\b\b\b"
+
+    # Simulate stage progression
+    if (( i % 10 == 0 )); then
+      current_stage=$(( (current_stage + 1) % ${#stages[@]} ))
+    fi
   done
-  printf "    \b\b\b\b"
+
+  # Clear the line after completion
+  printf "\r%s\n" "Setup Complete!                          "
 }
+
+# Example usage: Simulate a long-running process
+(sleep 10) &  # Simulate a background process
+loading_room $!
 
 # Check for Docker
 if ! command_exists docker; then
