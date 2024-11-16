@@ -8,8 +8,8 @@ setup(
     install_requires=[
         # Add dependencies from requirements.txt
     ],
-    author='Your Name',
-    author_email='your.email@example.com',
+    author='PR-CYBR',
+    author_email='support@pr-cybr.com',
     description='PR-CYBR Agent',
-    url='https://github.com/your-org/your-repo',
+    url='https://github.com/pr-cybr/',
 )
