@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <style>
+        /* Additional inline styles if needed */
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Welcome to Your Customized Agent Dashboard</h1>
+    </header>
+
+    <div class="container">
+        <section class="dashboard-content">
+            <h2>Dashboard Overview</h2>
+            <p>Here you can manage your tasks, monitor progress, and interact with the agent.</p>
+
+            <!-- Example dashboard components -->
+            <div class="dashboard-section">
+                <h3>Strategic Planning</h3>
+                <button onclick="executeFunction('strategic-planning')">Execute</button>
+            </div>
+
+            <div class="dashboard-section">
+                <h3>Coordination</h3>
+                <button onclick="executeFunction('coordination')">Execute</button>
+            </div>
+
+            <div class="dashboard-section">
+                <h3>Monitoring and Reporting</h3>
+                <button onclick="executeFunction('monitoring')">Execute</button>
+            </div>
+
+            <div class="dashboard-section">
+                <h3>Decision Support</h3>
+                <button onclick="executeFunction('decision-support')">Execute</button>
+            </div>
+
+            <!-- Add more sections as needed -->
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2023 PR-CYBR-MGMT-AGENT. All rights reserved.</p>
+    </footer>
+
+    <script>
+        function executeFunction(endpoint) {
+            fetch(`/api/${endpoint}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => alert(data.status))
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>

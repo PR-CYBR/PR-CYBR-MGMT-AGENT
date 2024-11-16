@@ -1,0 +1,43 @@
+/* Default theme variables */
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --background-color: #f4f4f9;
+    --text-color: #333;
+    --header-footer-bg-color: var(--primary-color);
+    --button-bg-color: var(--primary-color);
+    --button-hover-bg-color: #0056b3;
+}
+
+/* Apply theme variables */
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+header, footer {
+    background-color: var(--header-footer-bg-color);
+}
+
+button {
+    background-color: var(--button-bg-color);
+}
+
+button:hover {
+    background-color: var(--button-hover-bg-color);
+}
+
+/* Additional theme-specific styles */
+.custom-theme {
+    /* Example: Custom styles for a specific theme */
+    /* These can be dynamically added or modified based on user input */
+}
+
+/* Example of a dark theme */
+.dark-theme {
+    --background-color: #1e1e1e;
+    --text-color: #f4f4f9;
+    --header-footer-bg-color: #333;
+    --button-bg-color: #444;
+    --button-hover-bg-color: #555;
+}
