@@ -290,8 +290,8 @@ run_lynis_scan() {
   # Run the Lynis audit and display the report
   sudo lynis audit system
 
-  # Extract the security score from the report
-  local score=$(sudo lynis show report | grep "Hardening index" | awk '{print $3}' | tr -d '%')
+  # Extract the hardening index from the report
+  local score=$(sudo lynis show report | grep "Hardening index" | awk -F': ' '{print $2}' | tr -d '%')
 
   # Check if the score is greater than or equal to 40
   if [ "$score" -ge 40 ]; then
@@ -301,14 +301,6 @@ run_lynis_scan() {
     exit 1
   fi
 }
-
-# Check and install Lynis if not already done
-if ! command_exists lynis; then
-  install_lynis
-fi
-
-# Run Lynis security scan
-run_lynis_scan
 
 # -------------------- #
 # Docker Network Setup #
