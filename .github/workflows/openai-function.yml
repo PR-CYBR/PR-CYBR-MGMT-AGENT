@@ -2,6 +2,13 @@ name: OpenAI Function Integration
 
 on:
   workflow_dispatch:
+    inputs:
+      function_name:
+        description: 'Name of the OpenAI function to call'
+        required: true
+      parameters:
+        description: 'Parameters for the function call in JSON format'
+        required: false
   push:
     branches:
       - main
@@ -27,20 +34,22 @@ jobs:
         run: |
           python -c "
           import openai
+          import json
 
           openai.api_key = '${{ secrets.OPENAI_API_KEY }}'
 
+          function_name = '${{ github.event.inputs.function_name }}'
+          parameters = json.loads('${{ github.event.inputs.parameters }}' or '{}')
+
           function_call = {
-              'name': 'get_task_status',
-              'parameters': {
-                  'task_id': '12345'
-              }
+              'name': function_name,
+              'parameters': parameters
           }
 
           response = openai.ChatCompletion.create(
               model='gpt-4o-mini',
               messages=[
-                  {'role': 'user', 'content': 'Retrieve task status.'}
+                  {'role': 'user', 'content': f'Execute function {function_name}.'}
               ],
               functions=[function_call],
               function_call='auto'

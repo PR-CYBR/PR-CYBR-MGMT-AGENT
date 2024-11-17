@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Loading Your Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loading-page.css') }}">
     <style>
         /* Inline styles for the loading animation */
         .loading-container {
@@ -39,10 +40,17 @@
             </div>
         </div>
     </div>
+
+    <!-- Audio element for the Jet-Pack music track -->
+    <audio id="loadingMusic" autoplay loop>
+        <source src="{{ url_for('static', filename='media/Jet-Pack.mp3') }}" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
     <script>
         // JavaScript to handle image loading and simulate progress updates
         const localGifUrl = "{{ url_for('static', filename='images/loading_animation.gif') }}";
-        const fallbackGifUrl = "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExcmF0Z3J4N3g2enJqamt2NWc0Y3o1ZjA4MnVtcDZpcXlxemM0aHhodSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/CdhxVrdRN4YFi/giphy.gif";
+        const fallbackIframe = `<iframe src="https://giphy.com/embed/CdhxVrdRN4YFi" width="480" height="269" style="border:0;" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>`;
         const loadingAnimationElement = document.getElementById('loadingAnimation');
 
         // Function to set the background image
@@ -56,7 +64,7 @@
             setLoadingGif(localGifUrl);
         };
         img.onerror = function() {
-            setLoadingGif(fallbackGifUrl);
+            loadingAnimationElement.innerHTML = fallbackIframe;
         };
         img.src = localGifUrl;
 

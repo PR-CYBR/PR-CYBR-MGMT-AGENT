@@ -33,6 +33,31 @@ button:hover {
     /* These can be dynamically added or modified based on user input */
 }
 
+/* Loading Page Theme Styles */
+.loading-page-theme {
+    /* Background and text color specific to the loading page */
+    background-color: #1a1a1a; /* Darker background for loading page */
+    color: #e0e0e0; /* Light gray text for contrast */
+}
+
+.loading-page-theme .loading-animation {
+    /* Custom animation styles for the loading page */
+    border: 5px solid #e0e0e0; /* Border around the loading animation */
+    border-radius: 50%; /* Circular shape for the animation */
+}
+
+.loading-page-theme .loading-text {
+    /* Text styles specific to the loading page */
+    font-size: 1.8em; /* Slightly larger text for emphasis */
+    font-weight: bold; /* Bold text for better visibility */
+}
+
+.loading-page-theme .loading-progress p {
+    /* Progress message styles */
+    color: #ffcc00; /* Yellow color for progress messages */
+    font-style: italic; /* Italic style for a unique look */
+}
+
 /* Example of a dark theme */
 .dark-theme {
     --background-color: #1e1e1e;
