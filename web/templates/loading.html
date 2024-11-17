@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading Your Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <style>
+        /* Inline styles for the loading animation */
+        .loading-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+            text-align: center;
+        }
+        .loading-animation {
+            width: 200px;
+            height: 200px;
+            background-size: cover;
+            margin-bottom: 20px;
+        }
+        .loading-text {
+            font-size: 1.5em;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-container">
+        <div>
+            <div class="loading-animation" id="loadingAnimation"></div>
+            <div class="loading-text">Building Your Dashboard...</div>
+            <div class="loading-progress">
+                <!-- Progress messages will be appended here -->
+            </div>
+        </div>
+    </div>
+    <script>
+        // JavaScript to handle image loading and simulate progress updates
+        const localGifUrl = "{{ url_for('static', filename='images/loading_animation.gif') }}";
+        const fallbackGifUrl = "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExcmF0Z3J4N3g2enJqamt2NWc0Y3o1ZjA4MnVtcDZpcXlxemM0aHhodSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/CdhxVrdRN4YFi/giphy.gif";
+        const loadingAnimationElement = document.getElementById('loadingAnimation');
+
+        // Function to set the background image
+        function setLoadingGif(url) {
+            loadingAnimationElement.style.backgroundImage = `url('${url}')`;
+        }
+
+        // Attempt to load the local GIF
+        const img = new Image();
+        img.onload = function() {
+            setLoadingGif(localGifUrl);
+        };
+        img.onerror = function() {
+            setLoadingGif(fallbackGifUrl);
+        };
+        img.src = localGifUrl;
+
+        // Simulate progress updates
+        const progressMessages = [
+            "Initializing systems...",
+            "Loading assets...",
+            "Applying your theme...",
+            "Finalizing setup..."
+        ];
+        let currentMessageIndex = 0;
+        const progressElement = document.querySelector('.loading-progress');
+
+        function updateProgress() {
+            if (currentMessageIndex < progressMessages.length) {
+                // Append the new message to the existing content
+                progressElement.innerHTML += `<p>${progressMessages[currentMessageIndex]}</p>`;
+                currentMessageIndex++;
+                setTimeout(updateProgress, 2000); // Update every 2 seconds
+            } else {
+                window.location.href = "/dashboard"; // Redirect to the dashboard when done
+            }
+        }
+
+        updateProgress();
+    </script>
+</body>
+</html>
