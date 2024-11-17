@@ -1,114 +1,84 @@
 version: '3.8'
 
 services:
-  pr-cybr-mgmt-agent:
-    image: pr-cybr/mgmt-agent:latest
-    container_name: pr-cybr-mgmt-agent
-    env_file: .env  # Load environment variables from .env file
-    volumes:
-      - ./data:/app/data
-      - ./logs:/app/logs
-    networks:
-      - pr-cybr-net
+  web:
+    build: ./web
+    restart: always
     ports:
-      - "8080:80"  # Web interface port mapping
+      - "80:80"
+    depends_on:
+      - app
+    networks:
+      - app_network
+
+  app:
+    build: ./app
+    restart: always
+    ports:
+      - "8000:8000"
     depends_on:
       - db
+      - redis
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/dashboard_db
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MAPBOX_ACCESS_TOKEN=${MAPBOX_ACCESS_TOKEN}
+      - MUSIC_API_KEY=${MUSIC_API_KEY}
+    volumes:
+      - ./app:/app
+    networks:
+      - app_network
 
   db:
-    image: postgres:15
-    container_name: pr-cybr-postgres
+    image: postgres:13
+    restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: mydatabase
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pr_cybr_mgmt_agent_db_data:/var/lib/postgresql/data
     networks:
-      - pr-cybr-net
+      - pr_cybr_mgmt_agent_network
 
-  pr-cybr-backend-agent:
-    image: pr-cybr/backend-agent:latest
-    container_name: pr-cybr-backend-agent
-    env_file: .env  # Load environment variables from .env file
-    networks:
-      - pr-cybr-net
-    depends_on:
-      - db
-
-  pr-cybr-frontend-agent:
-    image: pr-cybr/frontend-agent:latest
-    container_name: pr-cybr-frontend-agent
-    env_file: .env  # Load environment variables from .env file
-    networks:
-      - pr-cybr-net
-
-  pr-cybr-database-agent:
-    image: pr-cybr/database-agent:latest
-    container_name: pr-cybr-database-agent
-    env_file: .env  # Load environment variables from .env file
-    networks:
-      - pr-cybr-net
-
-  pr-cybr-performance-agent:
-    image: pr-cybr/performance-agent:latest
-    container_name: pr-cybr-performance-agent
-    env_file: .env  # Load environment variables from .env file
-    networks:
-      - pr-cybr-net
-
-  pr-cybr-security-agent:
-    image: pr-cybr/security-agent:latest
-    container_name: pr-cybr-security-agent
-    env_file: .env  # Load environment variables from .env file
-    networks:
-      - pr-cybr-net
-
-  pr-cybr-testing-agent:
-    image: pr-cybr/testing-agent:latest
-    container_name: pr-cybr-testing-agent
-    env_file: .env  # Load environment variables from .env file
-    networks:
-      - pr-cybr-net
-
-  pr-cybr-ci-cd-agent:
-    image: pr-cybr/ci-cd-agent:latest
-    container_name: pr-cybr-ci-cd-agent
-    env_file: .env  # Load environment variables from .env file
-    networks:
-      - pr-cybr-net
-
-  pr-cybr-data-integration-agent:
-    image: pr-cybr/data-integration-agent:latest
-    container_name: pr-cybr-data-integration-agent
-    env_file: .env  # Load environment variables from .env file
-    networks:
-      - pr-cybr-net
-
-  pr-cybr-user-feedback-agent:
-    image: pr-cybr/user-feedback-agent:latest
-    container_name: pr-cybr-user-feedback-agent
-    env_file: .env  # Load environment variables from .env file
-    networks:
-      - pr-cybr-net
-
-  pr-cybr-documentation-agent:
-    image: pr-cybr/documentation-agent:latest
-    container_name: pr-cybr-documentation-agent
-    env_file: .env  # Load environment variables from .env file
-    networks:
-      - pr-cybr-net
-
-  pr-cybr-infrastructure-agent:
-    image: pr-cybr/infrastructure-agent:latest
-    container_name: pr-cybr-infrastructure-agent
-    env_file: .env  # Load environment variables from .env file
-    networks:
-      - pr-cybr-net
+volumes:
+  pr_cybr_mgmt_agent_db_data:
 
 networks:
-  pr-cybr-net:
+  pr_cybr_mgmt_agent_network:
+    driver: bridge
+
+   redis:
+    image: redis:6
+    restart: always
+    networks:
+      - pr_cybr_mgmt_agent_network
+
+  agent_runner:
+    image: myorg/agent-runner:latest
+    restart: always
+    environment:
+      - AGENT_NAME=pr-cybr-mgmt-agent
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    depends_on:
+      - db
+    networks:
+      - pr_cybr_mgmt_agent_network
+
+  github_runner:
+    image: myorg/github-actions-runner:latest
+    restart: always
+    environment:
+      - REPO_URL=https://github.com/myorg/myrepo
+      - RUNNER_TOKEN=${RUNNER_TOKEN}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - pr_cybr_mgmt_agent_network
+
+networks:
+  pr_cybr_mgmt_agent_network:
     driver: bridge
 
 volumes:
-  pgdata:
+  pr_cybr_mgmt_agent_db_data:
