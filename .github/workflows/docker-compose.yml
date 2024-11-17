@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   pr-cybr-mgmt-agent:
-    image: prcybr/pr-cybr-mgmt-agent:latest
+    image: pr-cybr/mgmt-agent:latest
     container_name: pr-cybr-mgmt-agent
     env_file: .env  # Load environment variables from .env file
     volumes:
@@ -12,79 +12,95 @@ services:
       - pr-cybr-net
     ports:
       - "8080:80"  # Web interface port mapping
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    container_name: pr-cybr-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mydatabase
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - pr-cybr-net
 
   pr-cybr-backend-agent:
-    image: prcybr/pr-cybr-backend-agent:latest
+    image: pr-cybr/backend-agent:latest
     container_name: pr-cybr-backend-agent
     env_file: .env  # Load environment variables from .env file
     networks:
       - pr-cybr-net
+    depends_on:
+      - db
 
   pr-cybr-frontend-agent:
-    image: prcybr/pr-cybr-frontend-agent:latest
+    image: pr-cybr/frontend-agent:latest
     container_name: pr-cybr-frontend-agent
     env_file: .env  # Load environment variables from .env file
     networks:
       - pr-cybr-net
 
   pr-cybr-database-agent:
-    image: prcybr/pr-cybr-database-agent:latest
+    image: pr-cybr/database-agent:latest
     container_name: pr-cybr-database-agent
     env_file: .env  # Load environment variables from .env file
     networks:
       - pr-cybr-net
 
   pr-cybr-performance-agent:
-    image: prcybr/pr-cybr-performance-agent:latest
+    image: pr-cybr/performance-agent:latest
     container_name: pr-cybr-performance-agent
     env_file: .env  # Load environment variables from .env file
     networks:
       - pr-cybr-net
 
   pr-cybr-security-agent:
-    image: prcybr/pr-cybr-security-agent:latest
+    image: pr-cybr/security-agent:latest
     container_name: pr-cybr-security-agent
     env_file: .env  # Load environment variables from .env file
     networks:
       - pr-cybr-net
 
   pr-cybr-testing-agent:
-    image: prcybr/pr-cybr-testing-agent:latest
+    image: pr-cybr/testing-agent:latest
     container_name: pr-cybr-testing-agent
     env_file: .env  # Load environment variables from .env file
     networks:
       - pr-cybr-net
 
   pr-cybr-ci-cd-agent:
-    image: prcybr/pr-cybr-ci-cd-agent:latest
+    image: pr-cybr/ci-cd-agent:latest
     container_name: pr-cybr-ci-cd-agent
     env_file: .env  # Load environment variables from .env file
     networks:
       - pr-cybr-net
 
   pr-cybr-data-integration-agent:
-    image: prcybr/pr-cybr-data-integration-agent:latest
+    image: pr-cybr/data-integration-agent:latest
     container_name: pr-cybr-data-integration-agent
     env_file: .env  # Load environment variables from .env file
     networks:
       - pr-cybr-net
 
   pr-cybr-user-feedback-agent:
-    image: prcybr/pr-cybr-user-feedback-agent:latest
+    image: pr-cybr/user-feedback-agent:latest
     container_name: pr-cybr-user-feedback-agent
     env_file: .env  # Load environment variables from .env file
     networks:
       - pr-cybr-net
 
   pr-cybr-documentation-agent:
-    image: prcybr/pr-cybr-documentation-agent:latest
+    image: pr-cybr/documentation-agent:latest
     container_name: pr-cybr-documentation-agent
     env_file: .env  # Load environment variables from .env file
     networks:
       - pr-cybr-net
 
   pr-cybr-infrastructure-agent:
-    image: prcybr/pr-cybr-infrastructure-agent:latest
+    image: pr-cybr/infrastructure-agent:latest
     container_name: pr-cybr-infrastructure-agent
     env_file: .env  # Load environment variables from .env file
     networks:
@@ -93,3 +109,6 @@ services:
 networks:
   pr-cybr-net:
     driver: bridge
+
+volumes:
+  pgdata:

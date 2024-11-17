@@ -2,27 +2,27 @@
 Flask==2.3.2
 flask-cors==3.0.10
 
-# Logging
-gunicorn==20.1.0  # For running the app in production
+# WSGI server for production
+gunicorn==20.1.0
 
-# Database (if applicable)
-psycopg2-binary==2.9.6  # PostgreSQL adapter for Python
+# Database adapter for PostgreSQL
+psycopg2-binary==2.9.6
 
-# Environment management
+# Environment variable management
 python-dotenv==1.0.0
 
 # HTTP requests
 requests==2.31.0
 
 # Data processing and utilities
-pandas==2.1.1  # For data manipulation and analysis
+pandas==2.1.1
 
 # Optional: Machine Learning / AI
-openai==0.27.8  # If using OpenAI's API
+openai==0.27.8
 
 # Optional: Geospatial libraries
-geopy==2.3.0  # For geocoding
-folium==0.14.0  # For interactive maps
+geopy==2.3.0
+folium==0.14.0
 
 # Testing
 pytest==7.4.2

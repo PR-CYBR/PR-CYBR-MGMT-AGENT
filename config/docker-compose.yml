@@ -12,6 +12,20 @@ services:
       - pr-cybr-net
     ports:
       - "8080:80"  # Web interface port mapping
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    container_name: pr-cybr-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mydatabase
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - pr-cybr-net
 
   pr-cybr-backend-agent:
     image: pr-cybr/backend-agent:latest
@@ -19,6 +33,8 @@ services:
     env_file: .env  # Load environment variables from .env file
     networks:
       - pr-cybr-net
+    depends_on:
+      - db
 
   pr-cybr-frontend-agent:
     image: pr-cybr/frontend-agent:latest
@@ -93,3 +109,6 @@ services:
 networks:
   pr-cybr-net:
     driver: bridge
+
+volumes:
+  pgdata:
