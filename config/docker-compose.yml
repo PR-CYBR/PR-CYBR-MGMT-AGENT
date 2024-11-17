@@ -1,6 +1,15 @@
 version: '3.8'
 
 services:
+<<<<<<< HEAD
+  pr-cybr-mgmt-agent:
+    image: prcybr/pr-cybr-mgmt-agent:latest
+    container_name: pr-cybr-mgmt-agent
+    env_file: .env  # Load environment variables from .env file
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+=======
   web:
     build: ./web
     restart: always
@@ -8,12 +17,17 @@ services:
       - "80:80"
     depends_on:
       - app
+>>>>>>> 6edf2f20a1aa82ad44f2842cf9dc96e95aec1e0c
     networks:
+<<<<<<< HEAD
+      - pr_cybr_mgmt_agent_network
+=======
       - app_network
 
   app:
     build: ./app
     restart: always
+>>>>>>> 6edf2f20a1aa82ad44f2842cf9dc96e95aec1e0c
     ports:
       - "8000:8000"
     depends_on:
@@ -30,8 +44,13 @@ services:
       - app_network
 
   db:
+<<<<<<< HEAD
+    image: postgres:15
+    container_name: pr-cybr-agent-db
+=======
     image: postgres:13
     restart: always
+>>>>>>> 6edf2f20a1aa82ad44f2842cf9dc96e95aec1e0c
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -41,19 +60,56 @@ services:
     networks:
       - pr_cybr_mgmt_agent_network
 
+<<<<<<< HEAD
+  pr-cybr-backend-agent:
+    image: prcybr/pr-cybr-backend-agent:latest
+    container_name: pr-cybr-backend-agent
+    env_file: .env  # Load environment variables from .env file
+    networks:
+      - pr_cybr_backend_agent_network
+    depends_on:
+      - db
+=======
 volumes:
   pr_cybr_mgmt_agent_db_data:
+>>>>>>> 6edf2f20a1aa82ad44f2842cf9dc96e95aec1e0c
 
+<<<<<<< HEAD
+  pr-cybr-frontend-agent:
+    image: prcybr/pr-cybr-frontend-agent:latest
+    container_name: pr-cybr-frontend-agent
+    env_file: .env  # Load environment variables from .env file
+    networks:
+      - pr_cybr_frontend_agent_network
+=======
 networks:
   pr_cybr_mgmt_agent_network:
     driver: bridge
+>>>>>>> 6edf2f20a1aa82ad44f2842cf9dc96e95aec1e0c
 
+<<<<<<< HEAD
+  pr-cybr-database-agent:
+    image: prcybr/pr-cybr-database-agent:latest
+    container_name: pr-cybr-database-agent
+    env_file: .env  # Load environment variables from .env file
+=======
    redis:
     image: redis:6
     restart: always
+>>>>>>> 6edf2f20a1aa82ad44f2842cf9dc96e95aec1e0c
     networks:
+<<<<<<< HEAD
+      - pr_cybr_database_agent_network
+=======
       - pr_cybr_mgmt_agent_network
+>>>>>>> 6edf2f20a1aa82ad44f2842cf9dc96e95aec1e0c
 
+<<<<<<< HEAD
+  pr-cybr-performance-agent:
+    image: prcybr/pr-cybr-performance-agent:latest
+    container_name: pr-cybr-performance-agent
+    env_file: .env  # Load environment variables from .env file
+=======
   agent_runner:
     image: myorg/agent-runner:latest
     restart: always
@@ -62,9 +118,20 @@ networks:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     depends_on:
       - db
+>>>>>>> 6edf2f20a1aa82ad44f2842cf9dc96e95aec1e0c
     networks:
+<<<<<<< HEAD
+      - pr_cybr_performance_agent_network
+=======
       - pr_cybr_mgmt_agent_network
+>>>>>>> 6edf2f20a1aa82ad44f2842cf9dc96e95aec1e0c
 
+<<<<<<< HEAD
+  pr-cybr-security-agent:
+    image: prcybr/pr-cybr-security-agent:latest
+    container_name: pr-cybr-security-agent
+    env_file: .env  # Load environment variables from .env file
+=======
   github_runner:
     image: myorg/github-actions-runner:latest
     restart: always
@@ -73,12 +140,100 @@ networks:
       - RUNNER_TOKEN=${RUNNER_TOKEN}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+>>>>>>> 6edf2f20a1aa82ad44f2842cf9dc96e95aec1e0c
     networks:
+<<<<<<< HEAD
+      - pr_cybr_security_agent_network
+=======
       - pr_cybr_mgmt_agent_network
+>>>>>>> 6edf2f20a1aa82ad44f2842cf9dc96e95aec1e0c
 
+<<<<<<< HEAD
+  pr-cybr-testing-agent:
+    image: prcybr/pr-cybr-testing-agent:latest
+    container_name: pr-cybr-testing-agent
+    env_file: .env  # Load environment variables from .env file
+    networks:
+      - pr_cybr_testing_agent_network
+
+  pr-cybr-ci-cd-agent:
+    image: prcybr/pr-cybr-ci-cd-agent:latest
+    container_name: pr-cybr-ci-cd-agent
+    env_file: .env  # Load environment variables from .env file
+    networks:
+      - pr_cybr_ci_cd_agent_network
+
+  pr-cybr-data-integration-agent:
+    image: prcybr/pr-cybr-data-integration-agent:latest
+    container_name: pr-cybr-data-integration-agent
+    env_file: .env  # Load environment variables from .env file
+    networks:
+      - pr_cybr_data_integration_agent_network
+
+  pr-cybr-user-feedback-agent:
+    image: prcybr/pr-cybr-user-feedback-agent:latest
+    container_name: pr-cybr-user-feedback-agent
+    env_file: .env  # Load environment variables from .env file
+    networks:
+      - pr_cybr_user_feedback_agent_network
+
+  pr-cybr-documentation-agent:
+    image: prcybr/pr-cybr-documentation-agent:latest
+    container_name: pr-cybr-documentation-agent
+    env_file: .env  # Load environment variables from .env file
+    networks:
+      - pr_cybr_documentation_agent_network
+
+  pr-cybr-infrastructure-agent:
+    image: prcybr/pr-cybr-infrastructure-agent:latest
+    container_name: pr-cybr-infrastructure-agent
+    env_file: .env  # Load environment variables from .env file
+    networks:
+      - pr_cybr_infrastructure_agent_network
+
+=======
+>>>>>>> 6edf2f20a1aa82ad44f2842cf9dc96e95aec1e0c
 networks:
   pr_cybr_mgmt_agent_network:
     driver: bridge
+  pr_cybr_backend_agent_network:
+    driver: bridge
+  pr_cybr_frontend_agent_network:
+    driver: bridge
+  pr_cybr_database_agent_network:
+    driver: bridge
+  pr_cybr_performance_agent_network:
+    driver: bridge
+  pr_cybr_security_agent_network:
+    driver: bridge
+  pr_cybr_testing_agent_network:
+    driver: bridge
+  pr_cybr_ci_cd_agent_network:
+    driver: bridge
+  pr_cybr_data_integration_agent_network:
+    driver: bridge
+  pr_cybr_user_feedback_agent_network:
+    driver: bridge
+  pr_cybr_documentation_agent_network:
+    driver: bridge
+  pr_cybr_infrastructure_agent_network:
+    driver: bridge
+
 
 volumes:
+<<<<<<< HEAD
   pr_cybr_mgmt_agent_db_data:
+  pr_cybr_backend_agent_db_data:
+  pr_cybr_frontend_agent_db_data:
+  pr_cybr_database_agent_db_data:
+  pr_cybr_performance_agent_db_data:
+  pr_cybr_security_agent_db_data:
+  pr_cybr_testing_agent_db_data:
+  pr_cybr_ci_cd_agent_db_data:
+  pr_cybr_data_integration_agent_db_data:
+  pr_cybr_user_feedback_agent_db_data:
+  pr_cybr_documentation_agent_db_data:
+  pr_cybr_infrastructure_agent_db_data:
+=======
+  pr_cybr_mgmt_agent_db_data:
+>>>>>>> 6edf2f20a1aa82ad44f2842cf9dc96e95aec1e0c
