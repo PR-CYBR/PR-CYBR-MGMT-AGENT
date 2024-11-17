@@ -1,1 +1,31 @@
-# Add your Python dependencies here
+# Flask and related packages
+Flask==2.3.2
+flask-cors==3.0.10
+
+# Logging
+gunicorn==20.1.0  # For running the app in production
+
+# Database (if applicable)
+psycopg2-binary==2.9.6  # PostgreSQL adapter for Python
+
+# Environment management
+python-dotenv==1.0.0
+
+# HTTP requests
+requests==2.31.0
+
+# Data processing and utilities
+pandas==2.1.1  # For data manipulation and analysis
+
+# Optional: Machine Learning / AI
+openai==0.27.8  # If using OpenAI's API
+
+# Optional: Geospatial libraries
+geopy==2.3.0  # For geocoding
+folium==0.14.0  # For interactive maps
+
+# Testing
+pytest==7.4.2
+pytest-flask==1.2.0
+
+# Add any other dependencies your application might need
