@@ -45,3 +45,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load saved theme settings on page load
     loadThemeSettings();
 });
+
+// Function to apply a default theme if no user theme is set
+function applyDefaultTheme() {
+    const defaultTheme = {
+        'primary-color': '#4CAF50',
+        'secondary-color': '#FFC107',
+        'background-color': '#f0f0f0',
+        'text-color': '#333',
+        'header-footer-bg-color': '#4CAF50',
+        'button-bg-color': '#4CAF50',
+        'button-hover-bg-color': '#388E3C'
+    };
+    updateTheme(defaultTheme);
+}
+
+// Apply default theme if no theme is saved
+if (!localStorage.getItem('userTheme')) {
+    applyDefaultTheme();
+}
