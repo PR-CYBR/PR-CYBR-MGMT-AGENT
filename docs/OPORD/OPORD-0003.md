@@ -136,20 +136,8 @@ Each agent must provide their lists in separate markdown code blocks. The struct
 ```
 
 
-<<<<<<< HEAD
 `PR-CYBR-Agent Functions`:
 ```markdown
-=======
-<!--
-These functions are meant to do the following:
-
-1. Allow Agent's to be able to create new threads / add other Agent's to current threads
-2. Adding data to thread 
-3. Prompting other Agent's for their response
-4. Be able to utilize other Agent's functions (core, openai, and pr-cybr-agent specific)
--->
-
->>>>>>> d721c77f4a5b20b304e9b92b7446f76f2d30fc64
 ## PR-CYBR-Agent Functions
 1. **function_name_1**
    - **Description**: [Add details].
@@ -158,7 +146,6 @@ These functions are meant to do the following:
    - **Outputs**: [Add details].
 ```
 
-<<<<<<< HEAD
 
 `Agent Dashboard Structure`:
 ```markdown
@@ -185,9 +172,6 @@ These functions are meant to do the following:
    - **Features**: [Add details].
 ```
 
-=======
-
->>>>>>> d721c77f4a5b20b304e9b92b7446f76f2d30fc64
 ## Notes for Execution
 
 	•	Reference the Agent Overview Document and existing materials for context.
