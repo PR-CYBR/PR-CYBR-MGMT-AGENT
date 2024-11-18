@@ -1,11 +1,11 @@
-# Overview of Agent Dashboard – Frontend
-
 <!-- 
 Key Objectives for this Document:
 1. Outline the purpose and functionality of the Agent Dashboard.
 2. Define the core components of the dashboard, including its UI/UX, integrations, and interactivity.
 3. Provide a framework for deploying and maintaining the frontend dashboard effectively.
 -->
+
+# Overview of Agent Dashboard – Frontend
 
 ## Overview
 
@@ -16,7 +16,7 @@ The `Agent Dashboard` serves as an interactive platform for users to engage with
 ## Key Components
 
 <!-- 
-Key Objectives for this Section:
+Key Points to highlight about Key Components:
 1. Highlight the major components of the dashboard, including chat interface, interactive map, and agent sidebar.
 2. Detail their specific functionalities and how they contribute to the user experience.
 3. Provide technical insights into implementation details, such as libraries or frameworks used.
@@ -33,9 +33,9 @@ Key Objectives for this Section:
 ### Interactive Map
 - **Technology**:
   - Built with Leaflet.js and MapBox API.
-  - Styled using a Jawg Matrix theme for a modern aesthetic.
+  - Styled based on user picked UI/UX theme during setup of Agent
 - **Features**:
-  - Displays geospatial data relevant to PR-CYBR operations.
+  - Displays geospatial data relevant to PR-CYBR operations. (map elements such as POI (Points-of-interest) relevant to Cybersecurity, threat intelligence, natural disasters, power outages, and other threats to public safty)
   - Includes search functionality and real-time updates for geographical insights.
 
 ### Agent Sidebar
@@ -50,7 +50,7 @@ Key Objectives for this Section:
 ## Deployment Strategy
 
 <!-- 
-Key Objectives for this Section:
+Key Points to highlight for Deployment Strategy:
 1. Provide clear deployment steps for the frontend dashboard.
 2. Include containerized deployment instructions for Docker environments.
 3. Ensure compatibility and scalability in deployment methods.
@@ -70,10 +70,10 @@ docker run -p 8080:80 pr-cybr-dashboard
 ## User Experience (UI/UX)
 
 <!-- 
-Key Objectives for this Section:
-1. Emphasize the responsive design principles applied to the dashboard.
-2. Detail user-centric features like theme customization and accessibility options.
-3. Highlight how UI/UX choices enhance overall usability.
+Key Points for User Experience (UI/UX):
+1. Dashboard should be responsive and seemless regardless of view from computer or mobile
+2. The theme that the user picked during the installation / setup phase, should be the theme that is applied and used for the Agent's Dashboard UI/UX
+3. There should be clear instructions and an option to change theme that the user can user / find , and apply at any time. (requires container restart)
 -->
 
 **Responsive Design**
@@ -91,9 +91,12 @@ Key Objectives for this Section:
 ## Advanced Features
 
 <!-- 
-Key Objectives for this Section:
-1. Outline additional features that enrich the user experience, such as notifications or music integration.
-2. Include technical specifications and potential expansion ideas.
+Key Points for Advanced Features:
+1. Music should be loaded and autoplayed as soon as the Dashboard is loaded
+2. Ability to chat to discord text channel 
+3. Ability to chat in slack text channel
+4. TAK Mission Package Builder Page / Popup  (allows for export)
+5. Threat Intel Feed: Page with RSS Feed
 -->
 
 **Notifications**
@@ -111,10 +114,10 @@ Key Objectives for this Section:
 ## Troubleshooting and Support
 
 <!-- 
-Key Objectives for this Section:
+Key Points for Troubleshooting and Support:
 1. Provide a list of common issues users might face and their solutions.
-2. Include links to relevant support resources or documentation.
-3. Ensure this section empowers users to resolve minor problems independently.
+2. Include links to relevant support resources or documentation. (such as Agent specific links)
+3. Ensure this section empowers users to resolve minor problems independently. (reference Wiki and Discussion Board)
 -->
 
 **Common Issues**
@@ -132,10 +135,10 @@ Key Objectives for this Section:
 ## Notes and References
 
 <!-- 
-Key Objectives for this Section:
-1. Include links to related documentation or external libraries used.
+Key Points for Notes and References:
+1. Include links to related documentation or external libraries used. (agent specific)
 2. Provide references for APIs and tools integrated into the dashboard.
-3. Document best practices for extending or maintaining the dashboard.
+3. Document best practices for extending or maintaining the dashboard. (mention steps to apply changes to docker container and re-deploy)
 -->
 
 •	APIs Used:
