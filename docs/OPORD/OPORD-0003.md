@@ -23,6 +23,12 @@ Key Point's to highlight about Agent Core Application Functions:
 2. Functions needed for Agent Database (backend)
 3. Functions needed for Agent Functions (core, openai, and pr-cybr-agent specific)
 4. Functions needed for Setup / Installation (whether installng locally, via cloud, or in/with a CI/CD pipeline)
+5. Functions needed for Security and Compliance
+6. Functions needed for User Support and Feedback
+7. Functions needed for Performance and Scalability
+8. Functions needed for Reporting and Analytics
+9. Functions needed for Integration with External Systems
+10. Functions needed for Continuous Improvement and Updates
 -->
 
 - **Definition**: Functions that handle operational aspects specific to the agent's application, such as managing data, interfacing with the frontend or backend, and executing agent-specific tasks.
@@ -34,14 +40,20 @@ Key Point's to highlight about Agent Core Application Functions:
 ### 2. OpenAI Functions
 
 <!--
-Key Point's to highlight about Agent OpenAI Functions:
+Key Points to Highlight about Agent OpenAI Functions:
 
 1. Extend the Agent's functionality (by utilizing function calling)
-2. Allow the Agent to retrive data stored in Vector Store (shared by all agents' AI Assistants)
+2. Allow the Agent to retrieve data stored in Vector Store (shared by all agents' AI Assistants)
 3. Allow cross-platform actions (such as returning a response via Discord or Slack)
 4. Allow for more advanced automation workflows (such as utilizing Zapier)
-5. Enable the ability to be able to trigger Github Actions (.yml workflow files / scripts)
+5. Enable the ability to trigger GitHub Actions (.yml workflow files / scripts)
 6. Facilitate the ability for advanced web searching
+7. Enhance Natural Language Processing capabilities
+8. Support real-time language translation
+9. Provide sentiment analysis for user feedback
+10. Enable personalized content recommendations
+11. Automate routine data analysis tasks
+12. Integrate with cloud-based AI services
 -->
 
 - **Definition**: Functions implemented on OpenAI’s platform that extend the AI assistant's capabilities for tasks such as NLP, data analysis, or decision support.
@@ -53,12 +65,18 @@ Key Point's to highlight about Agent OpenAI Functions:
 ### 3. PR-CYBR-Agent Functions
 
 <!--
-Key Point's to highlight about PR-CYBR-AGENT Functions:
+Key Points to Highlight about PR-CYBR-AGENT Functions:
 
-1. Allow Agent's to be able to create new threads / add other Agent's to current threads
-2. Adding data to thread 
-3. Prompting other Agent's for their response
-4. Be able to utilize other Agent's functions (core, openai, and pr-cybr-agent specific)
+1. Allow Agents to create new threads / add other Agents to current threads
+2. Add data to threads
+3. Prompt other Agents for their response
+4. Utilize other Agents' functions (core, openai, and pr-cybr-agent specific)
+5. Facilitate inter-agent data synchronization
+6. Enable collaborative task execution
+7. Support inter-agent alert and notification systems
+8. Manage shared resource access and allocation
+9. Coordinate multi-agent incident response
+10. Implement inter-agent performance monitoring
 -->
 
 - **Definition**: Functions that facilitate communication and interaction between agents. These functions ensure smooth data flow, inter-agent task execution, and shared resource management.
