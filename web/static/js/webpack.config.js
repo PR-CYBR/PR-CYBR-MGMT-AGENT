@@ -4,10 +4,10 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   mode: 'production', // Set to 'production' for optimized builds
-  entry: path.resolve(__dirname, '../static/js/main.js'), // Ensure this path is correct
+  entry: path.resolve(__dirname, 'main.js'), // Correct entry point
   output: {
     filename: 'bundle.js',
-    path: path.resolve(__dirname, '../dist'), // Ensure this path is correct
+    path: path.resolve(__dirname, '../../dist'), // Ensure this path is correct
   },
   module: {
     rules: [
@@ -35,7 +35,7 @@ module.exports = {
   ],
   devServer: {
     static: {
-      directory: path.resolve(__dirname, '../dist'), // Ensure this path is correct
+      directory: path.resolve(__dirname, '../../dist'), // Ensure this path is correct
     },
     compress: true,
     port: 9000,
