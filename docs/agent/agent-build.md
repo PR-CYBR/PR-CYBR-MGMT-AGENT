@@ -24,6 +24,9 @@
 
 - [ ] Provision function files (check Agent Overview document for list of 10 functions specific to each Agent) for each Agent in their respective Repositories 
     - [ ] PR-CYBR-MGMT-AGENT
+```markdown
+
+```
     - [ ] PR-CYBR-CI-CD-AGENT
     - [ ] PR-CYBR-DOCUMENTATION-AGENT
     - [ ] PR-CYBR-BACKEND-AGENT
@@ -45,7 +48,7 @@
 
 - **docker-compose.yml**:
     - [ ] Update to Setup Agent via _deploy_agent.sh_
-    
+
 - **openai-function.yml**:
     - [ ] Update to utilize all Agent’s functions 
     - [ ] Update to use **.env** variables (Assistant ID)

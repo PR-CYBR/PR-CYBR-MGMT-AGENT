@@ -1,4 +1,19 @@
-# OpenAI Function: TAK Mission Package Generator
+<!--
+Key Points to Highlight about TAK Mission Package Components:
+
+1. **Boundary Definition**: Clearly defined geographical boundaries using coordinates.
+2. **Markers and Points of Interest**: Specific locations marked for operational relevance.
+3. **Routes and Paths**: Optional inclusion of predefined routes or paths for navigation.
+4. **Operational Documents**: Additional data providing context or instructions for the mission.
+5. **Metadata Information**: Details about the package creation, such as date, division, and included elements.
+6. **Compatibility**: Ensure the package is compatible with TAK applications (ATAK, iTAK, WinTAK).
+7. **Security Considerations**: Implement measures to protect sensitive information within the package.
+8. **Download and Access**: Provide a secure and accessible method for users to download the package.
+9. **Error Handling**: Include mechanisms to handle errors during package creation and distribution.
+10. **User Interface Integration**: Design user-friendly interfaces for inputting and managing mission package data.
+-->
+
+# Agent Function: TAK Mission Package Generator
 
 **Description** 
 

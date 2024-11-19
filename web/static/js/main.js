@@ -40,6 +40,7 @@ const userTheme = {
 document.addEventListener('DOMContentLoaded', () => {
     applyTheme(userTheme);
     initializeMusicPlayer();
+    fetchDiscussions(); // Fetch discussions on page load
 });
 
 // Function to initialize the music player
@@ -97,6 +98,33 @@ function initializeMusicPlayer() {
 
     // Automatically play the next track when the current one ends
     audio.addEventListener("ended", playNextTrack);
+}
+
+// Function to fetch discussions from the server
+function fetchDiscussions() {
+    const discussionListElement = document.getElementById('discussion-list');
+
+    fetch('/api/discussions')
+        .then(response => response.json())
+        .then(data => {
+            if (Array.isArray(data)) {
+                data.forEach(discussion => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
+                        <a href="${discussion.html_url}" target="_blank">${discussion.title}</a>
+                        <br>
+                        <small>Started by: ${discussion.user.login} on ${new Date(discussion.created_at).toLocaleString()}</small>
+                    `;
+                    discussionListElement.appendChild(listItem);
+                });
+            } else {
+                discussionListElement.innerHTML = '<li>No discussions found.</li>';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching discussions:', error);
+            discussionListElement.innerHTML = '<li>Error loading discussions.</li>';
+        });
 }
 
 // Additional interactivity can be added here
