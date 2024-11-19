@@ -4,7 +4,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   mode: 'production', // Set to 'production' for optimized builds
-  entry: path.resolve(__dirname, 'src/js/main.js'), // Updated entry point
+  entry: path.resolve(__dirname, 'main.js'), // Updated entry point
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist'), // Output directory
