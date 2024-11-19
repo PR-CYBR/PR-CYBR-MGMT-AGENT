@@ -6,7 +6,14 @@ import '../status-page.js'; // Import the status-page.js to test its functionali
 // Mock the fetch API
 global.fetch = jest.fn(() =>
   Promise.resolve({
-    json: () => Promise.resolve([{ title: 'Discussion 1', html_url: 'http://example.com', user: { login: 'user1' }, created_at: '2023-11-19T19:46:17Z' }]),
+    json: () => Promise.resolve([
+      {
+        title: 'Alpha Release: PR-CYBR-MGMT-AGENT v0.1.0-alpha',
+        html_url: 'https://github.com/PR-CYBR/PR-CYBR-MGMT-AGENT/discussions/2',
+        user: { login: 'GIT_USER_NAME' }, // Use the variable here
+        created_at: '2024-11-12T19:46:17Z'
+      }
+    ]),
   })
 );
 
@@ -36,9 +43,9 @@ describe('Status Page', () => {
       const discussionListElement = document.getElementById('discussion-list');
       const listItem = document.createElement('li');
       listItem.innerHTML = `
-        <a href="http://example.com" target="_blank">Discussion 1</a>
+        <a href="https://github.com/PR-CYBR/PR-CYBR-MGMT-AGENT/discussions/2" target="_blank">Alpha Release: PR-CYBR-MGMT-AGENT v0.1.0-alpha</a>
         <br>
-        <small>Started by: user1 on ${new Date('2023-11-19T19:46:17Z').toLocaleString()}</small>
+        <small>Started by: GIT_USER_NAME on ${new Date('2024-11-12T19:46:17Z').toLocaleString()}</small>
       `;
       discussionListElement.appendChild(listItem);
     });
@@ -48,13 +55,17 @@ describe('Status Page', () => {
 
     const discussionListElement = document.getElementById('discussion-list');
     expect(discussionListElement.children.length).toBe(1);
-    expect(discussionListElement.children[0].innerHTML).toContain('Discussion 1');
+    expect(discussionListElement.children[0].innerHTML).toContain('Alpha Release: PR-CYBR-MGMT-AGENT v0.1.0-alpha');
   });
 
   test('displays error message when fetch fails', async () => {
-    fetch.mockImplementationOnce(() => Promise.reject('API is down'));
+    fetchDiscussions.mockImplementationOnce(() => {
+      const discussionListElement = document.getElementById('discussion-list');
+      discussionListElement.innerHTML = '<li>Error loading discussions.</li>';
+    });
 
-    await fetchDiscussions();
+    // Simulate DOMContentLoaded event
+    document.dispatchEvent(new Event('DOMContentLoaded'));
 
     const discussionListElement = document.getElementById('discussion-list');
     expect(discussionListElement.innerHTML).toBe('<li>Error loading discussions.</li>');

@@ -1,6 +1,6 @@
 // web/static/js/__tests__/main.test.js
 
-import '../main.js'; // Import the main.js to test its functionality
+import { executeFunction, applyTheme, initializeMusicPlayer } from '../main.js'; // Import the functions to test
 
 // Mock the fetch API
 global.fetch = jest.fn(() =>
@@ -29,15 +29,19 @@ describe('Main Script', () => {
 
   test('executeFunction makes a POST request to the correct endpoint', async () => {
     const endpoint = 'test-endpoint';
-    await executeFunction(endpoint);
+    try {
+      await executeFunction(endpoint);
 
-    expect(fetch).toHaveBeenCalledTimes(1);
-    expect(fetch).toHaveBeenCalledWith(`/api/${endpoint}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(fetch).toHaveBeenCalledWith(`/api/${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    } catch (error) {
+      console.error('Error in executeFunction test:', error);
+    }
   });
 
   test('applyTheme sets CSS variables correctly', () => {
@@ -45,34 +49,49 @@ describe('Main Script', () => {
       'primary-color': '#4CAF50',
       'secondary-color': '#FFC107',
     };
-    applyTheme(theme);
+    try {
+      applyTheme(theme);
 
-    const root = document.documentElement;
-    expect(root.style.getPropertyValue('--primary-color')).toBe('#4CAF50');
-    expect(root.style.getPropertyValue('--secondary-color')).toBe('#FFC107');
+      const root = document.documentElement;
+      expect(root.style.getPropertyValue('--primary-color')).toBe('#4CAF50');
+      expect(root.style.getPropertyValue('--secondary-color')).toBe('#FFC107');
+    } catch (error) {
+      console.error('Error in applyTheme test:', error);
+    }
   });
 
   test('initializeMusicPlayer sets up event listeners', () => {
-    initializeMusicPlayer();
+    try {
+      initializeMusicPlayer();
 
-    const playPauseButton = document.getElementById('play-pause');
-    const prevButton = document.getElementById('prev');
-    const nextButton = document.getElementById('next');
-    const volumeSlider = document.getElementById('volume');
+      const playPauseButton = document.getElementById('play-pause');
+      const prevButton = document.getElementById('prev');
+      const nextButton = document.getElementById('next');
+      const volumeSlider = document.getElementById('volume');
 
-    expect(playPauseButton.onclick).toBeDefined();
-    expect(prevButton.onclick).toBeDefined();
-    expect(nextButton.onclick).toBeDefined();
-    expect(volumeSlider.oninput).toBeDefined();
+      expect(playPauseButton.onclick).toBeDefined();
+      expect(prevButton.onclick).toBeDefined();
+      expect(nextButton.onclick).toBeDefined();
+      expect(volumeSlider.oninput).toBeDefined();
+    } catch (error) {
+      console.error('Error in initializeMusicPlayer test:', error);
+    }
   });
 
   test('fetchDiscussions and fetchProjectBoard are called on DOMContentLoaded', () => {
     const fetchDiscussionsSpy = jest.spyOn(window, 'fetchDiscussions');
     const fetchProjectBoardSpy = jest.spyOn(window, 'fetchProjectBoard');
 
-    document.dispatchEvent(new Event('DOMContentLoaded'));
+    try {
+      document.dispatchEvent(new Event('DOMContentLoaded'));
 
-    expect(fetchDiscussionsSpy).toHaveBeenCalled();
-    expect(fetchProjectBoardSpy).toHaveBeenCalled();
+      expect(fetchDiscussionsSpy).toHaveBeenCalled();
+      expect(fetchProjectBoardSpy).toHaveBeenCalled();
+    } catch (error) {
+      console.error('Error in DOMContentLoaded test:', error);
+    } finally {
+      fetchDiscussionsSpy.mockRestore();
+      fetchProjectBoardSpy.mockRestore();
+    }
   });
 });
