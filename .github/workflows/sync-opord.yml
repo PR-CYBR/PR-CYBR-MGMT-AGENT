@@ -15,14 +15,14 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Step 2: Set up Git user for commits
+      # Step 2: Set up Git user for commits globally
       - name: Set up Git
         env:
           GIT_USER_NAME: ${{ secrets.GIT_USER_NAME }}
           GIT_USER_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
         run: |
-          git config user.name "$GIT_USER_NAME"
-          git config user.email "$GIT_USER_EMAIL"
+          git config --global user.name "$GIT_USER_NAME"
+          git config --global user.email "$GIT_USER_EMAIL"
 
       # Step 3: List all files in docs/OPORD/ and sync to target repositories
       - name: Sync OPORD to Agent Repositories
