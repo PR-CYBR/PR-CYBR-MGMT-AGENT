@@ -21,7 +21,8 @@
     "css-loader": "^6.0.0",
     "style-loader": "^3.0.0",
     "jest": "^29.0.0",
-    "babel-jest": "^29.0.0"
+    "babel-jest": "^29.0.0",
+    "jest-environment-jsdom": "^29.0.0" // Add this line
   },
   "babel": {
     "presets": ["@babel/preset-env"]
