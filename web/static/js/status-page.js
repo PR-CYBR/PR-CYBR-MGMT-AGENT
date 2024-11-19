@@ -1,5 +1,7 @@
+// web/static/js/status-page.js
+
 import { fetchDiscussions } from './discussion-board.js';
-import { fetchProjectBoard } from './project-board.js';
+import { fetchProjectBoard } from './project-board.js'; // Ensure this import is correct
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Status page loaded. Ensure the server is running to fetch discussions and project board.');
