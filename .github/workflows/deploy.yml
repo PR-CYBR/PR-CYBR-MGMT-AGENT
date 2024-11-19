@@ -22,12 +22,11 @@ jobs:
       run: npm install
 
     - name: Build the site
-      run: |
-        # If using a build tool like Webpack or Babel, run the build command here
-        # For example: npm run build
+      run: npm run build  # Ensure this matches your build script
 
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./web/templates  # Directory containing your status.html and other static files
+        github_token: ${{ secrets.PR_CYBR_ACTIONS }}
+        publish_dir: ./dist  # Adjust this path to your build output directory
+        publish_branch: main  # Specify the main branch if deploying to it
