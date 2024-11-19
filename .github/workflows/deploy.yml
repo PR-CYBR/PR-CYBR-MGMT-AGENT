@@ -1,12 +1,15 @@
-name: Deploy to GitHub Pages
+name: Build and Deploy
 
 on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,12 +24,21 @@ jobs:
     - name: Install dependencies
       run: npm install
 
+    - name: Run tests
+      run: npm test # Ensure you have a test script in package.json
+
     - name: Build the site
-      run: npm run build  # Ensure this matches your build script
+      run: npm run build
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
 
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.PR_CYBR_ACTIONS }}
-        publish_dir: ./dist  # Adjust this path to your build output directory
-        publish_branch: main  # Specify the main branch if deploying to it
+        publish_dir: ./dist
