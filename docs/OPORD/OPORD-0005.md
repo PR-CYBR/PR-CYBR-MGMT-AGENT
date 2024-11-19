@@ -46,10 +46,10 @@ Each PR-CYBR agent will implement or verify a function that:
      - `POI.md`
      - `OPORD-<ORDER-ID>.md`
      - `PR-<DIV-CODE>-TAK-MP-<MM>-<YEAR>.zip`
-   - Store the `.zip` file in a pre-configured storage location or send it to the user via the email address provided.
+   - Store the `.zip` file in a pre-configured storage location or send it to the user via the email address provided
 
 ---
-
+l
 ### **b. Tasks**
 1. **Agent-Specific Implementation**
    - Verify if the required function exists; otherwise, create and deploy it.
