@@ -78,6 +78,7 @@ describe('Status Page', () => {
         </section>
         <section id="project-board">
           <h2>Project Board</h2>
+          <input type="text" id="project-search" placeholder="Search tasks..."> <!-- Add this line -->
           <div id="interactive-board">
             <ul id="project-board-list">
               <!-- Project board items will be dynamically inserted here -->
