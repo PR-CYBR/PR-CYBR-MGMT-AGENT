@@ -1,3 +1,4 @@
+/* Global Styles */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -6,6 +7,7 @@ body {
     color: #e0e0e0; /* Light grey text for contrast */
 }
 
+/* Header Styles */
 header {
     background-color: #4CAF50;
     color: white;
@@ -13,6 +15,7 @@ header {
     text-align: center;
 }
 
+/* Navigation Styles */
 nav ul {
     list-style-type: none;
     padding: 0;
@@ -36,10 +39,12 @@ nav ul li a:hover {
     background-color: #575757;
 }
 
+/* Main Content Styles */
 main {
     padding: 20px;
 }
 
+/* Section Styles */
 section {
     margin-bottom: 40px;
     background-color: #2e2e2e; /* Dark grey for sections */
@@ -48,6 +53,7 @@ section {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
+/* Metric and List Styles */
 .metric, .actions-list, .discussion-list, #interactive-board {
     margin-top: 10px;
 }
@@ -57,6 +63,7 @@ section {
     color: #ffffff; /* White text for labels */
 }
 
+/* Button Styles */
 button {
     background-color: #4CAF50;
     color: white;
@@ -68,4 +75,26 @@ button {
 
 button:hover {
     background-color: #45a049;
+}
+
+/* Additional Styles */
+#project-search {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+#project-board-list li {
+    margin: 5px 0;
+    padding: 5px;
+    background-color: #3a3a3a;
+    border-radius: 3px;
+    color: #e0e0e0;
+}
+
+#project-board-list li strong {
+    color: #ffffff;
 }

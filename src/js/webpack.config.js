@@ -1,13 +1,13 @@
-// web/static/js/webpack.config.js
+// webpack.config.js
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   mode: 'production', // Set to 'production' for optimized builds
-  entry: path.resolve(__dirname, 'main.js'), // Correct entry point
+  entry: path.resolve(__dirname, 'src/js/main.js'), // Updated entry point
   output: {
     filename: 'bundle.js',
-    path: path.resolve(__dirname, '../../dist'), // Ensure this path is correct
+    path: path.resolve(__dirname, 'dist'), // Output directory
   },
   module: {
     rules: [
@@ -29,13 +29,13 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, '../templates/status.html'), // Ensure this path is correct
+      template: path.resolve(__dirname, 'src/templates/status.html'), // Updated template path
       filename: 'status.html', // Output HTML file
     }),
   ],
   devServer: {
     static: {
-      directory: path.resolve(__dirname, '../../dist'), // Ensure this path is correct
+      directory: path.resolve(__dirname, 'dist'), // Updated for Webpack 5
     },
     compress: true,
     port: 9000,

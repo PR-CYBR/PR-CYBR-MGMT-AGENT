@@ -25,7 +25,7 @@ jobs:
       run: npm install
 
     - name: Run status-page tests
-      run: npm test -- web/static/js/__tests__/status-page.test.js
+      run: npm test -- src/js/__tests__/status-page.test.js # Updated path
 
   deploy:
     runs-on: ubuntu-latest
@@ -41,4 +41,4 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.PR_CYBR_ACTIONS }}
-        publish_dir: ./web/dist
+        publish_dir: ./dist 
