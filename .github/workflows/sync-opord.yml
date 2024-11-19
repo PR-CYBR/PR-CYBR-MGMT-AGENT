@@ -17,9 +17,12 @@ jobs:
 
       # Step 2: Set up Git user for commits
       - name: Set up Git
+        env:
+          GIT_USER_NAME: ${{ secrets.GIT_USER_NAME }}
+          GIT_USER_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
         run: |
-          git config user.name "PR-CYBR-MGMT-AGENT"
-          git config user.email "support@pr-cybr.com" 
+          git config user.name "$GIT_USER_NAME"
+          git config user.email "$GIT_USER_EMAIL"
 
       # Step 3: List all files in docs/OPORD/ and sync to target repositories
       - name: Sync OPORD to Agent Repositories
