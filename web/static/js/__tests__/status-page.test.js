@@ -4,6 +4,13 @@ import { fetchDiscussions } from '../discussion-board.js';
 import { fetchProjectBoard } from '../project-board.js'; // Import the function to mock
 import '../status-page.js'; // Import the status-page.js to test its functionality
 
+// Mock the fetch API
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    json: () => Promise.resolve([]), // Return an empty array or mock data as needed
+  })
+);
+
 jest.mock('../discussion-board.js', () => ({
   fetchDiscussions: jest.fn(),
 }));
@@ -14,9 +21,9 @@ jest.mock('../project-board.js', () => ({
 
 describe('Status Page', () => {
   beforeEach(() => {
-    fetch.mockClear();
+    fetch.mockClear(); // Clear mock calls
     fetchDiscussions.mockClear();
-    fetchProjectBoard.mockClear(); // Clear mock calls
+    fetchProjectBoard.mockClear();
     document.body.innerHTML = `
       <header>
         <h1 id="agent-title">PR-CYBR-MGMT-AGENT</h1>
