@@ -1,0 +1,78 @@
+name: Sync OPORD Files
+
+on:
+  push:
+    paths:
+      - 'docs/OPORD/**'
+
+jobs:
+  sync-opord:
+    name: Sync OPORD to Agent Repositories
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the triggering repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Git user for commits
+      - name: Set up Git
+        run: |
+          git config user.name "PR-CYBR-MGMT-AGENT"
+          git config user.email "support@pr-cybr.com" 
+
+      # Step 3: List all files in docs/OPORD/ and sync to target repositories
+      - name: Sync OPORD to Agent Repositories
+        env:
+          AGENT_REPOS: |
+            PR-CYBR-DATA-INTEGRATION-AGENT
+            PR-CYBR-FRONTEND-AGENT
+            PR-CYBR-BACKEND-AGENT
+            PR-CYBR-DATABASE-AGENT
+            PR-CYBR-SECURITY-AGENT
+            PR-CYBR-PERFORMANCE-AGENT
+            PR-CYBR-INFRASTRUCTURE-AGENT
+            PR-CYBR-TESTING-AGENT
+            PR-CYBR-CI-CD-AGENT
+            PR-CYBR-USER-FEEDBACK-AGENT
+            PR-CYBR-DOCUMENTATION-AGENT
+        run: |
+          for REPO in $AGENT_REPOS; do
+            echo "Processing $REPO..."
+
+            # Clone the target repository
+            git clone https://github.com/PR-CYBR/$REPO.git
+
+            # Copy the new/updated files into the target repository
+            cp -r docs/OPORD/* $REPO/docs/OPORD/
+
+            cd $REPO
+
+            # Check for changes and create a commit if needed
+            git add docs/OPORD/
+            if git diff --cached --quiet; then
+              echo "No changes to commit for $REPO."
+              cd ..
+              rm -rf $REPO
+              continue
+            fi
+
+            # Commit changes
+            git commit -m "Sync OPORD files from PR-CYBR-MGMT-AGENT"
+
+            # Push to a new branch
+            BRANCH_NAME="sync-opord-$(date +%Y%m%d%H%M%S)"
+            git checkout -b $BRANCH_NAME
+            git push origin $BRANCH_NAME
+
+            # Create a pull request
+            gh pr create --title "Sync OPORD files" --body "This PR adds the latest OPORD files from PR-CYBR-MGMT-AGENT to $REPO." --base main
+
+            cd ..
+            rm -rf $REPO
+          done
+
+      # Step 4: Cleanup
+      - name: Cleanup Workspace
+        run: |
+          rm -rf *
