@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main  # Change this to your default branch if it's not 'main'
+      - main
 
 jobs:
   build-and-deploy:
@@ -23,12 +23,11 @@ jobs:
 
     - name: Build the site
       run: |
-        # If you have a build step, include it here
-        # For example, if using a static site generator like Jekyll or Hugo, run the build command
-        # If no build step is needed, you can skip this step
+        # If using a build tool like Webpack or Babel, run the build command here
+        # For example: npm run build
 
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
-        github_token: ${{ secrets.PR_CYBR_ACTIONS }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./web/templates  # Directory containing your status.html and other static files

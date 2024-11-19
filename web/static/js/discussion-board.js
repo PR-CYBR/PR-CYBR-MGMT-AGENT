@@ -1,40 +1,35 @@
-document.addEventListener('DOMContentLoaded', function() {
+export function fetchDiscussions() {
     const discussionListElement = document.getElementById('discussion-list');
 
     const repoOwner = 'PR-CYBR'; // Replace with your GitHub organization or user
     const repoName = 'PR-CYBR-MGMT-AGENT'; // Replace with your repository name
 
-    function fetchDiscussions() {
-        const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/discussions`;
+    const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/discussions`;
 
-        fetch(apiUrl, {
-            headers: {
-                'Accept': 'application/vnd.github.v3+json',
-                // 'Authorization': 'token YOUR_GITHUB_TOKEN' // Uncomment and replace with your token if needed
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (Array.isArray(data)) {
-                data.forEach(discussion => {
-                    const listItem = document.createElement('li');
-                    listItem.innerHTML = `
-                        <a href="${discussion.html_url}" target="_blank">${discussion.title}</a>
-                        <br>
-                        <small>Started by: ${discussion.user.login} on ${new Date(discussion.created_at).toLocaleString()}</small>
-                    `;
-                    discussionListElement.appendChild(listItem);
-                });
-            } else {
-                discussionListElement.innerHTML = '<li>No discussions found.</li>';
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching discussions:', error);
-            discussionListElement.innerHTML = '<li>Error loading discussions.</li>';
-        });
-    }
-
-    // Fetch discussions on page load
-    fetchDiscussions();
-});
+    fetch(apiUrl, {
+        headers: {
+            'Accept': 'application/vnd.github.v3+json',
+            // 'Authorization': 'token YOUR_GITHUB_TOKEN' // Uncomment and replace with your token if needed
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (Array.isArray(data)) {
+            data.forEach(discussion => {
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    <a href="${discussion.html_url}" target="_blank">${discussion.title}</a>
+                    <br>
+                    <small>Started by: ${discussion.user.login} on ${new Date(discussion.created_at).toLocaleString()}</small>
+                `;
+                discussionListElement.appendChild(listItem);
+            });
+        } else {
+            discussionListElement.innerHTML = '<li>No discussions found.</li>';
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching discussions:', error);
+        discussionListElement.innerHTML = '<li>Error loading discussions.</li>';
+    });
+}
