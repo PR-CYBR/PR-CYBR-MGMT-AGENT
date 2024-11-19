@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <style>
+        /* Additional inline styles if needed */
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Welcome to Your Customized Agent Dashboard</h1>
+    </header>
+
+    <div class="container">
+        <section class="dashboard-content">
+            <h2>Dashboard Overview</h2>
+            <p>Here you can manage your tasks, monitor progress, and interact with the agent.</p>
+
+            <!-- Example dashboard components -->
+            <div class="dashboard-section">
+                <h3>Strategic Planning</h3>
+                <button onclick="executeFunction('strategic-planning')">Execute</button>
+            </div>
+
+            <div class="dashboard-section">
+                <h3>Coordination</h3>
+                <button onclick="executeFunction('coordination')">Execute</button>
+            </div>
+
+            <div class="dashboard-section">
+                <h3>Monitoring and Reporting</h3>
+                <button onclick="executeFunction('monitoring')">Execute</button>
+            </div>
+
+            <div class="dashboard-section">
+                <h3>Decision Support</h3>
+                <button onclick="executeFunction('decision-support')">Execute</button>
+            </div>
+
+            <!-- Add more sections as needed -->
+        </section>
+
+        <section id="music-player">
+            <h2>Music Player</h2>
+            <div id="player-controls">
+                <button id="play-pause">Play/Pause</button>
+                <button id="prev">Previous</button>
+                <button id="next">Next</button>
+                <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5">
+            </div>
+            <ul id="playlist">
+                <li data-src="{{ url_for('static', filename='media/Bad-News.mp3') }}">Bad News</li>
+                <li data-src="{{ url_for('static', filename='media/Streetwalker.mp3') }}">Streetwalker</li>
+                <li data-src="{{ url_for('static', filename='media/he-Equaliser-Not-Alone.mp3') }}">The Equaliser - Not Alone</li>
+            </ul>
+        </section>
+    </div>
+
+    <footer>
+        <p>PR-CYBR Initiative. "Protegiendo a los que no ven"</p>
+    </footer>
+
+    <script>
+        function executeFunction(endpoint) {
+            fetch(`/api/${endpoint}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => alert(data.status))
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+    <script src="{{ url_for('static', filename='scripts/music-player.js') }}"></script> <!-- Link to the JavaScript file for the music player -->
+</body>
+</html>
