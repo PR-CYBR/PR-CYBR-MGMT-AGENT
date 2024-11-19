@@ -22,7 +22,7 @@ jobs:
         node-version: '14'
 
     - name: Install dependencies
-      run: npm ci # Use npm ci for a clean install based on package-lock.json
+      run: npm install # Use npm install if package-lock.json is not available
 
     - name: Run tests
       run: npm test
@@ -40,5 +40,5 @@ jobs:
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
-        github_token: ${{ secrets.PR_CYBR_ACTIONS }} # Use the default GitHub token
-        publish_dir: ./web/dist # Ensure this path matches your output directory
+        github_token: ${{ secrets.PR_CYBR_ACTIONS }}
+        publish_dir: ./web/dist
