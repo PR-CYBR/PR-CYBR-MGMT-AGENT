@@ -4,10 +4,10 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   mode: 'production', // Set to 'production' for optimized builds
-  entry: path.resolve(__dirname, 'status-page.js'), // Ensure this path is correct
+  entry: path.resolve(__dirname, '../main.js'), // Adjusted entry point path
   output: {
     filename: 'bundle.js',
-    path: path.resolve(__dirname, '../../dist'), // Adjusted output directory path to be two levels up
+    path: path.resolve(__dirname, '../../dist'), // Adjusted output directory path
   },
   module: {
     rules: [
