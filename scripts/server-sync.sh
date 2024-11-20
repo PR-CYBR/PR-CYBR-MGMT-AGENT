@@ -26,6 +26,16 @@ sudo mkdir -p $LYNIS_REPORT_DIR
 sudo lynis audit system --quiet --logfile $LYNIS_REPORT_FILE
 echo "Lynis scan complete. Report saved to $LYNIS_REPORT_FILE."
 
+# Commit the report to a branch
+echo "Committing Lynis report to the repository..."
+git config --global user.email "you@example.com"
+git config --global user.name "Your Name"
+git checkout -b lynis-reports || git checkout lynis-reports
+cp $LYNIS_REPORT_FILE ./lynis-report.txt
+git add lynis-report.txt
+git commit -m "Add Lynis report $(date +%Y%m%d%H%M%S)"
+git push origin lynis-reports
+
 # Trigger GitHub Actions workflows
 echo "Triggering GitHub Actions workflows..."
 
