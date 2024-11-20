@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - 'docs/OPORD/**'
+  schedule:
+    - cron: '0 * * * *' # Runs every hour
 
 jobs:
   sync-opord:
