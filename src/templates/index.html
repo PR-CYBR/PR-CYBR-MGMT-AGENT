@@ -3,66 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PR-CYBR-MGMT-AGENT Dashboard</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Link to a CSS file if needed -->
+    <title>Agent Status</title>
+    <link rel="stylesheet" href="static/css/status-page.css"> <!-- Ensure this path is correct -->
 </head>
 <body>
     <header>
-        <h1>PR-CYBR-MGMT-AGENT Dashboard</h1>
-        <p>Welcome to the management dashboard for overseeing cybersecurity initiatives in Puerto Rico.</p>
+        <h1 id="agent-title">PR-CYBR-MGMT-AGENT</h1>
+        <p id="agent-summary">PR-CYBR-MGMT-AGENT is a tool for managing and enhancing cybersecurity efforts in Puerto Rico, featuring an interactive dashboard for real-time operations.</p>
     </header>
-
+    <nav>
+        <ul>
+            <li><a href="#agent-status">Agent-Status</a></li>
+            <li><a href="#agent-actions">Agent-Actions</a></li>
+            <li><a href="#discussion-board">Discussion Board</a></li>
+            <li><a href="#project-board">Project Board</a></li>
+        </ul>
+    </nav>
     <main>
-        <section id="overview">
-            <h2>Overview</h2>
-            <p>This dashboard provides an interface to interact with the PR-CYBR-MGMT-AGENT, allowing users to manage and monitor cybersecurity operations effectively.</p>
-        </section>
-
-        <section id="features">
-            <h2>Features</h2>
-            <ul>
-                <li><strong>Interactive Map:</strong> Visualize and update cybersecurity operations across regions.</li>
-                <li><strong>API Integration:</strong> Communicate with backend services for real-time data and command execution.</li>
-                <li><strong>Authentication:</strong> Secure access to dashboard functionalities.</li>
-                <li><strong>Data Retrieval:</strong> Fetch and display operational data and reports.</li>
-            </ul>
-        </section>
-
-        <section id="music-player">
-            <h2>Music Player</h2>
-            <div id="player-controls">
-                <button id="play-pause">Play/Pause</button>
-                <button id="prev">Previous</button>
-                <button id="next">Next</button>
-                <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5">
+        <section id="agent-status">
+            <h2>Agent Status</h2>
+            <div class="status-metrics">
+                <div class="metric">
+                    <span class="metric-label">Recent Commit:</span>
+                    <span class="metric-value" id="recent-commit">Loading...</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Active Tasks:</span>
+                    <span class="metric-value" id="active-tasks">Loading...</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Issues & Pull Requests:</span>
+                    <span class="metric-value" id="issues-prs">Loading...</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Repository Statistics:</span>
+                    <span class="metric-value" id="repo-stats">Loading...</span>
+                </div>
             </div>
-            <ul id="playlist">
-                <li data-src="media/Bad-News.mp3">Bad News</li>
-                <li data-src="media/Streetwalker.mp3">Streetwalker</li>
-                <li data-src="media/he-Equaliser-Not-Alone.mp3">The Equaliser - Not Alone</li>
-            </ul>
+            <button onclick="refreshStatus()">Refresh Status</button>
         </section>
-
-        <section id="backend-architecture">
-            <h2>Backend Architecture</h2>
-            <p>The backend is built using lightweight frameworks like Flask or FastAPI, providing RESTful APIs for seamless interaction with the agent's core functions.</p>
-            <ul>
-                <li><strong>Dockerized Environment:</strong> The backend runs within a Docker container for consistent deployment.</li>
-                <li><strong>Service Integration:</strong> Defined in docker-compose.yml for easy setup and management.</li>
-                <li><strong>Provisioning Script:</strong> Use <code>scripts/setup_dashboard_backend.sh</code> to set up and launch the backend service.</li>
-            </ul>
+        <section id="agent-actions">
+            <h2>Agent Actions</h2>
+            <div class="actions-list">
+                <ul id="workflow-list">
+                    <!-- Workflow items will be dynamically inserted here -->
+                </ul>
+            </div>
         </section>
-
-        <section id="contact">
-            <h2>Contact</h2>
-            <p>For more information, visit our <a href="https://github.com/PR-CYBR/PR-CYBR-MGMT-AGENT">GitHub Repository</a> or join the <a href="https://github.com/PR-CYBR/PR-CYBR-MGMT-AGENT/discussions">Discussion Board</a>.</p>
+        <section id="discussion-board">
+            <h2>Discussion Board</h2>
+            <div class="discussion-list">
+                <ul id="discussion-list">
+                    <!-- Discussion items will be dynamically inserted here -->
+                </ul>
+            </div>
+        </section>
+        <section id="project-board">
+            <h2>Project Board</h2>
+            <input type="text" id="project-search" placeholder="Search tasks...">
+            <div id="interactive-board">
+                <ul id="project-board-list">
+                    <!-- Project board items will be dynamically inserted here -->
+                </ul>
+            </div>
         </section>
     </main>
-
-    <footer>
-        <p>PR-CYBR Initiative. "Protegiendo a los que no ven"</p>
-    </footer>
-
-    <script src="scripts/music-player.js"></script> <!-- Link to the JavaScript file for the music player -->
+    <script src="bundle.js"></script> <!-- Updated to use the Webpack output bundle -->
 </body>
 </html>
