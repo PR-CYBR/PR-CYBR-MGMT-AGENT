@@ -1,158 +1,38 @@
-version: '3.8'
+name: Build and Push Docker Image
 
-services:
-  pr-cybr-mgmt-agent:
-    image: prcybr/pr-cybr-mgmt-agent:latest
-    container_name: pr-cybr-mgmt-agent
-    env_file: .env  # Load environment variables from .env file
-    volumes:
-      - ./data:/app/data
-      - ./logs:/app/logs
-    networks:
-      - pr_cybr_mgmt_agent_network
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
-      - redis
-    environment:
-      - DATABASE_URL=postgresql://user:password@db:5432/dashboard_db
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - MAPBOX_ACCESS_TOKEN=${MAPBOX_ACCESS_TOKEN}
-      - MUSIC_API_KEY=${MUSIC_API_KEY}
-    volumes:
-      - ./app:/app
-    networks:
-      - app_network
+on:
+  workflow_run:
+    workflows: ["Build and Deploy with Webpack"]
+    types:
+      - completed
 
-  db:
-    image: postgres:15
-    container_name: pr-cybr-agent-db
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-    volumes:
-      - pr_cybr_mgmt_agent_db_data:/var/lib/postgresql/data
-    networks:
-      - pr_cybr_mgmt_agent_network
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
 
-  pr-cybr-backend-agent:
-    image: prcybr/pr-cybr-backend-agent:latest
-    container_name: pr-cybr-backend-agent
-    env_file: .env  # Load environment variables from .env file
-    networks:
-      - pr_cybr_backend_agent_network
-    depends_on:
-      - db
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-  pr-cybr-frontend-agent:
-    image: prcybr/pr-cybr-frontend-agent:latest
-    container_name: pr-cybr-frontend-agent
-    env_file: .env  # Load environment variables from .env file
-    networks:
-      - pr_cybr_frontend_agent_network
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
 
-  pr-cybr-database-agent:
-    image: prcybr/pr-cybr-database-agent:latest
-    container_name: pr-cybr-database-agent
-    env_file: .env  # Load environment variables from .env file
-    networks:
-      - pr_cybr_database_agent_network
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
 
-  pr-cybr-performance-agent:
-    image: prcybr/pr-cybr-performance-agent:latest
-    container_name: pr-cybr-performance-agent
-    env_file: .env  # Load environment variables from .env file
-    networks:
-      - pr_cybr_performance_agent_network
+    - name: Extract version tag
+      id: extract_tag
+      run: echo "TAG=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
 
-  pr-cybr-security-agent:
-    image: prcybr/pr-cybr-security-agent:latest
-    container_name: pr-cybr-security-agent
-    env_file: .env  # Load environment variables from .env file
-    networks:
-      - pr_cybr_security_agent_network
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: true
+        tags: prcybr/pr-cybr-mgmt-agent:${{ env.TAG }}
 
-  pr-cybr-testing-agent:
-    image: prcybr/pr-cybr-testing-agent:latest
-    container_name: pr-cybr-testing-agent
-    env_file: .env  # Load environment variables from .env file
-    networks:
-      - pr_cybr_testing_agent_network
-
-  pr-cybr-ci-cd-agent:
-    image: prcybr/pr-cybr-ci-cd-agent:latest
-    container_name: pr-cybr-ci-cd-agent
-    env_file: .env  # Load environment variables from .env file
-    networks:
-      - pr_cybr_ci_cd_agent_network
-
-  pr-cybr-data-integration-agent:
-    image: prcybr/pr-cybr-data-integration-agent:latest
-    container_name: pr-cybr-data-integration-agent
-    env_file: .env  # Load environment variables from .env file
-    networks:
-      - pr_cybr_data_integration_agent_network
-
-  pr-cybr-user-feedback-agent:
-    image: prcybr/pr-cybr-user-feedback-agent:latest
-    container_name: pr-cybr-user-feedback-agent
-    env_file: .env  # Load environment variables from .env file
-    networks:
-      - pr_cybr_user_feedback_agent_network
-
-  pr-cybr-documentation-agent:
-    image: prcybr/pr-cybr-documentation-agent:latest
-    container_name: pr-cybr-documentation-agent
-    env_file: .env  # Load environment variables from .env file
-    networks:
-      - pr_cybr_documentation_agent_network
-
-  pr-cybr-infrastructure-agent:
-    image: prcybr/pr-cybr-infrastructure-agent:latest
-    container_name: pr-cybr-infrastructure-agent
-    env_file: .env  # Load environment variables from .env file
-    networks:
-      - pr_cybr_infrastructure_agent_network
-
-networks:
-  pr_cybr_mgmt_agent_network:
-    driver: bridge
-  pr_cybr_backend_agent_network:
-    driver: bridge
-  pr_cybr_frontend_agent_network:
-    driver: bridge
-  pr_cybr_database_agent_network:
-    driver: bridge
-  pr_cybr_performance_agent_network:
-    driver: bridge
-  pr_cybr_security_agent_network:
-    driver: bridge
-  pr_cybr_testing_agent_network:
-    driver: bridge
-  pr_cybr_ci_cd_agent_network:
-    driver: bridge
-  pr_cybr_data_integration_agent_network:
-    driver: bridge
-  pr_cybr_user_feedback_agent_network:
-    driver: bridge
-  pr_cybr_documentation_agent_network:
-    driver: bridge
-  pr_cybr_infrastructure_agent_network:
-    driver: bridge
-
-
-volumes:
-  pr_cybr_mgmt_agent_db_data:
-  pr_cybr_backend_agent_db_data:
-  pr_cybr_frontend_agent_db_data:
-  pr_cybr_database_agent_db_data:
-  pr_cybr_performance_agent_db_data:
-  pr_cybr_security_agent_db_data:
-  pr_cybr_testing_agent_db_data:
-  pr_cybr_ci_cd_agent_db_data:
-  pr_cybr_data_integration_agent_db_data:
-  pr_cybr_user_feedback_agent_db_data:
-  pr_cybr_documentation_agent_db_data:
-  pr_cybr_infrastructure_agent_db_data:
+    - name: Verify image
+      run: docker pull prcybr/pr-cybr-mgmt-agent:${{ env.TAG }}
