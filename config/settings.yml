@@ -44,6 +44,39 @@ docker_network: "${DOCKER_NETWORK}"
 enable_authentication: "${ENABLE_AUTHENTICATION}"
 auth_method: "${AUTH_METHOD}"
 
+# Flask configuration
+flask_env: "${FLASK_ENV}"
+flask_debug: "${FLASK_DEBUG}"
+
+# Agent configuration
+assistant_id: "${ASSISTANT_ID}"
+
+# Domain Info
+domain_name: "${DOMAIN_NAME}"
+ssl_email: "${SSL_EMAIL}"
+
+# N8N Config
+n8n_host: "${N8N_HOST}"
+n8n_port: "${N8N_PORT}"
+n8n_basic_auth_user: "${N8N_BASIC_AUTH_USER}"
+n8n_basic_auth_password: "${N8N_BASIC_AUTH_PASSWORD}"
+
+# NGINX Config
+nginx_conf: "${NGINX_CONF}"
+
+# Zerotier Config
+zerotier_ip: "${ZEROTIER_IP}"
+zerotier_id: "${ZEROTIER_ID}"
+
+# Timezone configuration
+n8n_tz: "${N8N_TZ}"
+
+# CORS configuration
+cors_allowed_origins: "${CORS_ALLOWED_ORIGINS}"
+
+# External service URLs
+external_service_url: "${EXTERNAL_SERVICE_URL}"
+
 # Note: The following settings and their corresponding functions must be created and updated
 # via the OpenAI Platform Dashboard to ensure proper integration and functionality.
 # Ensure that the necessary API endpoints, authentication mechanisms, and data handling
