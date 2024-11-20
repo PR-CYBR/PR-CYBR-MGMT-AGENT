@@ -34,15 +34,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Deploy static files to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.PR_CYBR_ACTIONS }}
-        publish_dir: ./src/templates
-
-    - name: Create a tag to trigger Webpack workflow
+    - name: Deploy static files to main branch
       run: |
         git config --global user.name "github-actions"
         git config --global user.email "github-actions@github.com"
-        git tag -a deploy-success -m "Trigger Webpack build"
-        git push origin deploy-success
+        git add src/templates # Ensure this path is correct and files exist
+        git commit -m "Deploy static files"
+        git push origin main
