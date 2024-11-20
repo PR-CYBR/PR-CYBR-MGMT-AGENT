@@ -1,0 +1,25 @@
+name: Server Setup
+
+on:
+  workflow_dispatch: # Allows manual triggering of the workflow
+  schedule:
+    - cron: '0 0 * * *' # Runs daily at midnight
+
+jobs:
+  setup-server:
+    runs-on: self-hosted
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Run server setup script
+      run: |
+        chmod +x scripts/server-setup.sh
+        ./scripts/server-setup.sh
+      env:
+        POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+        POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Add any other environment variables needed by your script

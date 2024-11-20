@@ -40,6 +40,32 @@ sudo zerotier-cli join $ZT_NETWORK_ID
 read -p "Enter desired ZeroTier IP Address: " ZT_IP_ADDRESS
 sudo zerotier-cli set $ZT_NETWORK_ID ip4assignments $ZT_IP_ADDRESS
 
+# Set up GitHub self-hosted runner
+echo "Setting up GitHub self-hosted runner..."
+RUNNER_VERSION="2.308.0" # Update to the latest version as needed
+RUNNER_DIR="actions-runner"
+
+# Create runner directory
+mkdir -p $RUNNER_DIR && cd $RUNNER_DIR
+
+# Download and extract the runner
+curl -o actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz -L https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz
+tar xzf ./actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz
+
+# Configure the runner
+echo "Enter your GitHub repository URL (e.g., https://github.com/owner/repo):"
+read REPO_URL
+echo "Enter your GitHub runner token:"
+read RUNNER_TOKEN
+
+./config.sh --url $REPO_URL --token $RUNNER_TOKEN --unattended --replace
+
+# Install and start the runner service
+sudo ./svc.sh install
+sudo ./svc.sh start
+
+cd ..
+
 # Create a new tmux session with separate window panes
 echo "Setting up tmux session..."
 tmux new-session -d -s server-monitor
