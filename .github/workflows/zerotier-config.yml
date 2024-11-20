@@ -1,0 +1,38 @@
+name: ZeroTier Configuration Check
+
+on:
+  workflow_dispatch: # Allows manual triggering of the workflow
+  schedule:
+    - cron: '0 * * * *' # Runs every hour
+
+jobs:
+  check-zerotier:
+    runs-on: self-hosted
+
+    steps:
+    - name: Check ZeroTier Installation
+      run: |
+        if ! command -v zerotier-cli &> /dev/null; then
+          echo "ZeroTier is not installed. Please install ZeroTier."
+          exit 1
+        else
+          echo "ZeroTier is installed."
+        fi
+
+    - name: Check ZeroTier Network Connection
+      env:
+        ZEROTIER_NETWORK_ID: ${{ secrets.ZEROTIER_NETWORK_ID }}
+      run: |
+        if [ -z "$ZEROTIER_NETWORK_ID" ]; then
+          echo "Error: ZEROTIER_NETWORK_ID is not set. Please set it as a repository secret."
+          exit 1
+        fi
+
+        NETWORK_STATUS=$(zerotier-cli listnetworks | grep $ZEROTIER_NETWORK_ID)
+
+        if [ -z "$NETWORK_STATUS" ]; then
+          echo "Not connected to ZeroTier network $ZEROTIER_NETWORK_ID. Please join the network."
+          exit 1
+        else
+          echo "Connected to ZeroTier network $ZEROTIER_NETWORK_ID."
+        fi

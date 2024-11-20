@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Load environment variables from .env file if it exists
+if [ -f .env ]; then
+  export $(cat .env | xargs)
+fi
+
+# Prompt for DIV-CODE to name the node
+read -p "Enter DIV-CODE for the node: " DIV_CODE
+
 # Update system
 echo "Updating system..."
 sudo apt-get update && sudo apt-get upgrade -y
@@ -23,7 +31,7 @@ docker-compose up -d
 
 # Ensure PostgreSQL container is functional
 echo "Checking PostgreSQL container status..."
-until docker exec pr-cybr-agent-db pg_isready -U $POSTGRES_USER; do
+until docker exec pr-cybr-agent-db pg_isready -U ${POSTGRES_USER:-$(read -p "Enter PostgreSQL user: " REPLY && echo $REPLY)}; do
   echo "Waiting for PostgreSQL to be ready..."
   sleep 2
 done
@@ -40,31 +48,27 @@ sudo zerotier-cli join $ZT_NETWORK_ID
 read -p "Enter desired ZeroTier IP Address: " ZT_IP_ADDRESS
 sudo zerotier-cli set $ZT_NETWORK_ID ip4assignments $ZT_IP_ADDRESS
 
-# Set up GitHub self-hosted runner
-echo "Setting up GitHub self-hosted runner..."
-RUNNER_VERSION="2.308.0" # Update to the latest version as needed
-RUNNER_DIR="actions-runner"
+# Create and name container
+NODE_NAME="${DIV_CODE}-NODE-$(date +%s)"
+echo "Creating and naming container: $NODE_NAME"
+docker rename pr-cybr-mgmt-agent $NODE_NAME
 
-# Create runner directory
-mkdir -p $RUNNER_DIR && cd $RUNNER_DIR
+# Trigger Zapier webhook
+echo "Triggering Zapier webhook..."
+curl -X POST -H "Content-Type: application/json" -d '{"node_name": "'"$(hostname)"'"}' ${ZAPIER_WEBHOOK_URL:-$(read -p "Enter Zapier Webhook URL: " REPLY && echo $REPLY)}
 
-# Download and extract the runner
-curl -o actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz -L https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz
-tar xzf ./actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz
+# Set up a cron job to run server-sync.sh every hour
+echo "Setting up cron job for server-sync.sh..."
+(crontab -l 2>/dev/null; echo "0 * * * * /bin/bash $(pwd)/scripts/server-sync.sh") | crontab -
 
-# Configure the runner
-echo "Enter your GitHub repository URL (e.g., https://github.com/owner/repo):"
-read REPO_URL
-echo "Enter your GitHub runner token:"
-read RUNNER_TOKEN
-
-./config.sh --url $REPO_URL --token $RUNNER_TOKEN --unattended --replace
-
-# Install and start the runner service
-sudo ./svc.sh install
-sudo ./svc.sh start
-
-cd ..
+# Run server-sync.sh script immediately
+echo "Running server-sync.sh script..."
+if ./scripts/server-sync.sh; then
+  echo -e "\033[1;32mAll steps have succeeded! The server node is set up and running.\033[0m"
+else
+  echo -e "\033[1;31mTest failed. Please check the logs for errors.\033[0m"
+  echo "Alternative solution: Ensure all environment variables are set correctly and the network is configured properly."
+fi
 
 # Create a new tmux session with separate window panes
 echo "Setting up tmux session..."

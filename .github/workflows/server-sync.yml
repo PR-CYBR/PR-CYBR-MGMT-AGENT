@@ -40,3 +40,9 @@ jobs:
         docker-compose images --format '{{.Repository}}:{{.Tag}}' | while read image; do
           docker pull $image:$TAG
         done
+
+    - name: Trigger ZeroTier Config Workflow
+      uses: peter-evans/repository-dispatch@v2
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        event-type: zerotier-config-check

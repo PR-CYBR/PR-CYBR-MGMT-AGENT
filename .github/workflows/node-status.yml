@@ -1,0 +1,38 @@
+name: Node Status Report
+
+on:
+  push:
+    branches:
+      - lynis-reports
+
+jobs:
+  send-report:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Send Report to Discord
+      env:
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        DIV_CODE: ${{ secrets.DIV_CODE }}
+      run: |
+        if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+          echo "Error: DISCORD_WEBHOOK_URL is not set. Please set it as a repository secret."
+          exit 1
+        fi
+
+        if [ -z "$DIV_CODE" ]; then
+          echo "Error: DIV_CODE is not set. Please set it as a repository secret."
+          exit 1
+        fi
+
+        NODE_NUMBER=$(hostname | grep -o '[0-9]*' | head -n 1)
+        REPORT_NAME="${DIV_CODE}-NODE-${NODE_NUMBER}-SYTREP"
+
+        curl -X POST \
+          -H "Content-Type: multipart/form-data" \
+          -F "file=@lynis-report.txt" \
+          -F "payload_json={\"content\": \"${REPORT_NAME}\"}" \
+          $DISCORD_WEBHOOK_URL
