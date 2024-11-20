@@ -34,10 +34,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: List files for debugging
+      run: ls -R src/templates # Adjust this path as needed
+
     - name: Deploy static files to main branch
       run: |
         git config --global user.name "github-actions"
         git config --global user.email "github-actions@github.com"
         git add src/templates # Ensure this path is correct and files exist
-        git commit -m "Deploy static files"
-        git push origin main
+        git commit -m "Deploy static files" || echo "No changes to commit"
+        git push origin main || echo "Nothing to push"
