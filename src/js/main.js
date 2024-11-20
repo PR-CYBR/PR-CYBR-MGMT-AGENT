@@ -1,8 +1,8 @@
-// web/static/js/main.js
+// src/js/main.js
 
 // Import necessary modules
 import { fetchDiscussions } from './discussion-board.js';
-import { fetchProjectBoard } from './project-board.js'; // Import fetchProjectBoard from project-board.js
+import { fetchProjectBoard } from './project-board.js';
 import './status-page.js';
 
 // Function to execute a specific agent function via API call
@@ -15,8 +15,7 @@ function executeFunction(endpoint) {
     })
     .then(response => response.json())
     .then(data => {
-        // Display the status message from the server
-        alert(data.status);
+        alert(data.status); // Display the status message from the server
     })
     .catch(error => {
         console.error('Error:', error);
@@ -47,8 +46,8 @@ const userTheme = {
 document.addEventListener('DOMContentLoaded', () => {
     applyTheme(userTheme);
     initializeMusicPlayer();
-    fetchDiscussions(); // Fetch discussions on page load
-    fetchProjectBoard(); // Fetch project board on page load
+    fetchDiscussions();
+    fetchProjectBoard();
 });
 
 // Function to initialize the music player
