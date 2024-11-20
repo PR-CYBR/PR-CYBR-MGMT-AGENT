@@ -11,7 +11,7 @@ export function fetchDiscussions() {
     fetch(apiUrl, {
         headers: {
             'Accept': 'application/vnd.github.v3+json',
-            'Authorization': 'token PR_CYBR_ACTIONS' // Uncomment and replace with your token if needed
+            'Authorization': 'token PR_CYBR_ACTIONS' 
         }
     })
     .then(response => response.json())
