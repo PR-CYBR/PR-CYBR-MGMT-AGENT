@@ -1,3 +1,5 @@
+// src/js/discussion-board.js
+
 export function fetchDiscussions() {
     const discussionListElement = document.getElementById('discussion-list');
 
@@ -9,7 +11,7 @@ export function fetchDiscussions() {
     fetch(apiUrl, {
         headers: {
             'Accept': 'application/vnd.github.v3+json',
-            // 'Authorization': 'token YOUR_GITHUB_TOKEN' // Uncomment and replace with your token if needed
+            'Authorization': 'token PR_CYBR_ACTIONS' // Uncomment and replace with your token if needed
         }
     })
     .then(response => response.json())

@@ -1,12 +1,13 @@
-name: Build and Deploy with Webpack
+name: Update Static Site
 
 on:
-  push:
-    tags:
-      - deploy-success
+  workflow_run:
+    workflows: ["Deploy Static Site"]
+    types:
+      - completed
 
 jobs:
-  build:
+  update:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,10 +22,10 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Build the site
+    - name: Build the site with Webpack
       run: npm run build
 
-    - name: Deploy to GitHub Pages
+    - name: Deploy updates to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.PR_CYBR_ACTIONS }}
