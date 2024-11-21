@@ -429,8 +429,8 @@ log_message "Executing setup scripts for each agent repository..."
 
 for REPO_PATH in "$CLONE_DIR"/*; do
     REPO_NAME=$(basename "$REPO_PATH")
-    LOCAL_SETUP_SCRIPT="$REPO_PATH/setup.py"
-    CLOUD_SETUP_SCRIPT="$REPO_PATH/docker-compose.yml"
+    LOCAL_SETUP_SCRIPT="$REPO_PATH/scrips/local_setup.sh"
+    CLOUD_SETUP_SCRIPT="$REPO_PATH/.github/docker-compose.yml"
 
     if [ -f "$LOCAL_SETUP_SCRIPT" ]; then
         log_message "Running local setup script for '$REPO_NAME'..."
@@ -557,6 +557,17 @@ log_message "Ensuring the dashboard reflects real-time system health and key met
 # For demonstration purposes, we'll assume this is configured within the dashboard image
 
 log_message "Dashboard is configured to display real-time data from agent containers."
+
+# Setup n8n using the pr-cybr-ci-cd-agent's script
+log_message "Setting up n8n using the pr-cybr-ci-cd-agent's setup script..."
+
+# Run the n8n setup script
+if bash scripts/n8n-setup.sh; then
+    log_message "n8n setup completed successfully."
+else
+    log_message "Failed to set up n8n. Please check the setup script for details."
+    exit 1
+fi
 
 # Log completion of Part 8
 log_message "Part 8: Dashboard and User Access completed successfully."

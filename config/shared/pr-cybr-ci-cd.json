@@ -1,0 +1,91 @@
+{
+    "agent_name": "PR-CYBR-CI-CD-AGENT",
+    "repository": "https://github.com/PR-CYBR/PR-CYBR-CI-CD-AGENT",
+    "docker": {
+      "repository": "https://hub.docker.com/r/prcybr/pr-cybr-ci-cd-agent",
+      "pull_command": "docker pull prcybr/pr-cybr-ci-cd-agent"
+    },
+    "description": "Agent responsible for automating and managing the CI/CD pipelines of the PR-CYBR initiative to ensure efficient, secure, and reliable development workflows.",
+    "version": "1.0.0",
+    "maintainers": [
+      {
+        "name": "PR-CYBR Team",
+        "email": "support@pr-cybr.com"
+      }
+    ],
+    "dependencies": {
+      "libraries": [
+        "Jenkins",
+        "GitHub Actions",
+        "Terraform",
+        "Kubernetes",
+        "Docker"
+      ],
+      "services": [
+        "PR-CYBR-TESTING-AGENT",
+        "PR-CYBR-SECURITY-AGENT",
+        "PR-CYBR-MGMT-AGENT",
+        "PR-CYBR-FRONTEND-AGENT",
+        "PR-CYBR-BACKEND-AGENT",
+        "PR-CYBR-INFRASTRUCTURE-AGENT",
+        "PR-CYBR-PERFORMANCE-AGENT"
+      ]
+    },
+    "config": {
+      "ci_cd": {
+        "enabled": true,
+        "pipelines": {
+          "build": true,
+          "test": true,
+          "deploy": true
+        },
+        "security_integration": true,
+        "testing_integration": true
+      },
+      "monitoring": {
+        "pipeline_status": true,
+        "alerts": true
+      },
+      "deployment": {
+        "strategies": ["Blue-Green", "Canary"],
+        "automatic_rollback": true
+      },
+      "inter_agent_communication": {
+        "protocols": ["RESTful APIs", "Webhooks"],
+        "authentication": "OAuth Tokens",
+        "data_formats": ["JSON", "YAML"]
+      }
+    },
+    "functions": [
+      {
+        "name": "build_pipeline",
+        "description": "Constructs CI/CD pipelines from configuration files.",
+        "inputs": ["Pipeline definitions from settings.yml"],
+        "outputs": ["Configured pipelines ready for execution"]
+      },
+      {
+        "name": "execute_pipeline",
+        "description": "Runs the CI/CD pipelines, including build, test, and deployment stages.",
+        "inputs": ["Trigger events such as code commits"],
+        "outputs": ["Artifacts, deployment updates, and execution logs"]
+      },
+      {
+        "name": "deploy_to_kubernetes",
+        "description": "Deploys applications to Kubernetes clusters automatically.",
+        "inputs": ["Deployment manifests, Kubernetes context"],
+        "outputs": ["Applications deployed in Kubernetes clusters"]
+      },
+      {
+        "name": "trigger_tests",
+        "description": "Triggers test suites from the PR-CYBR-TESTING-AGENT during the pipeline.",
+        "inputs": ["Build artifacts or deployed systems"],
+        "outputs": ["Test results and validation feedback"]
+      },
+      {
+        "name": "rollback_deployment",
+        "description": "Rolls back to the last stable deployment if a failure occurs.",
+        "inputs": ["Deployment identifiers, failure reasons"],
+        "outputs": ["Redeployed stable version and confirmation"]
+      }
+    ]
+  }

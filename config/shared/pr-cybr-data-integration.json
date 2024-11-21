@@ -1,0 +1,81 @@
+{
+    "agent_name": "PR-CYBR-DATA-INTEGRATION-AGENT",
+    "repository": "https://github.com/PR-CYBR/PR-CYBR-DATA-INTEGRATION-AGENT",
+    "docker": {
+      "repository": "https://hub.docker.com/repository/docker/prcybr/pr-cybr-data-integration-agent",
+      "pull_command": "docker pull prcybr/pr-cybr-data-integration-agent"
+    },
+    "description": "AI agent responsible for managing, integrating, and optimizing data flows across all components of the PR-CYBR initiative.",
+    "version": "1.0.0",
+    "maintainers": [
+      {
+        "name": "PR-CYBR Team",
+        "email": "support@pr-cybr.com"
+      }
+    ],
+    "dependencies": {
+      "libraries": [
+        "pandas",
+        "numpy",
+        "sqlalchemy",
+        "flask",
+        "kafka-python"
+      ],
+      "services": [
+        "PR-CYBR-MGMT-AGENT",
+        "PR-CYBR-SECURITY-AGENT",
+        "PR-CYBR-PERFORMANCE-AGENT",
+        "PR-CYBR-DATABASE-AGENT"
+      ]
+    },
+    "config": {
+      "settings": {
+        "data_validation_rules": {
+          "missing_values": "error",
+          "duplicate_records": "warn"
+        },
+        "backup_policy": {
+          "frequency": "daily",
+          "storage_location": "secure-cloud"
+        },
+        "real_time_data_streaming": true
+      },
+      "inter_agent_communication": {
+        "protocols": ["RESTful API", "gRPC"],
+        "encryption": "AES-256",
+        "authentication": "OAuth 2.0"
+      }
+    },
+    "functions": [
+      {
+        "name": "ingest_from_sources",
+        "description": "Fetch data from various sources including APIs, databases, and filesystems.",
+        "inputs": ["source configurations"],
+        "outputs": ["raw data"]
+      },
+      {
+        "name": "normalize_data",
+        "description": "Transform and standardize raw data for compatibility.",
+        "inputs": ["raw data"],
+        "outputs": ["normalized data"]
+      },
+      {
+        "name": "validate_schema",
+        "description": "Check data against predefined schemas for integrity.",
+        "inputs": ["data schema", "transformed data"],
+        "outputs": ["validation report"]
+      },
+      {
+        "name": "integrate_data",
+        "description": "Merge and synchronize datasets for inter-agent use.",
+        "inputs": ["validated data"],
+        "outputs": ["integrated datasets"]
+      },
+      {
+        "name": "push_data_to_agents",
+        "description": "Send integrated datasets to other agents.",
+        "inputs": ["data payload", "agent identifiers"],
+        "outputs": ["confirmation of delivery"]
+      }
+    ]
+  }

@@ -1,0 +1,29 @@
+{
+    "agentName": "<AGENT_NAME>",
+    "repository": "https://github.com/PR-CYBR-<AGENT_NAME>",
+    "description": "<A brief description of the agent's purpose>",
+    "version": "1.0.0",
+    "maintainers": [
+      {
+        "name": "<Maintainer Name>",
+        "email": "<Maintainer Email>"
+      }
+    ],
+    "dependencies": {
+      "libraries": [],
+      "services": []
+    },
+    "config": {
+      "settings": {
+        "key1": "value1",
+        "key2": "value2"
+      }
+    },
+    "workflow": {
+      "ci": "github-actions",
+      "tests": [
+        "unit",
+        "integration"
+      ]
+    }
+  }

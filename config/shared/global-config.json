@@ -1,0 +1,58 @@
+{
+    "organization": "PR-CYBR",
+    "defaultVersion": "1.0.0",
+    "repositoryBaseURL": "https://github.com/PR-CYBR/",
+    "agents": [
+        "PR-CYBR-MGMT-AGENT",
+        "PR-CYBR-DATA-INTEGRATION-AGENT",
+        "PR-CYBR-DATABASE-AGENT",
+        "PR-CYBR-FRONTEND-AGENT",
+        "PR-CYBR-BACKEND-AGENT",
+        "PR-CYBR-PERFORMANCE-AGENT",
+        "PR-CYBR-SECURITY-AGENT",
+        "PR-CYBR-TESTING-AGENT",
+        "PR-CYBR-CI-CD-AGENT",
+        "PR-CYBR-USER-FEEDBACK-AGENT",
+        "PR-CYBR-DOCUMENTATION-AGENT",
+        "PR-CYBR-INFRASTRUCTURE-AGENT"
+    ],
+    "maintainers": [
+        {
+            "name": "PR-CYBR-AGENTS",
+            "email": "net@pr-cybr.com"
+        }
+    ],
+    "ci": {
+        "platform": "github-actions",
+        "workflowFile": ".github/workflows/ci-agent-sync.yml"
+    },
+    "testing": {
+        "unitTests": true,
+        "integrationTests": true,
+        "codeCoverageThreshold": 80
+    },
+    "deployment": {
+        "environment": "production",
+        "autoDeploy": false
+    },
+    "security": {
+        "audit": true,
+        "vulnerabilityScanning": true
+    },
+    "globalDependencies": {
+        "libraries": [
+            "common-library-1",
+            "common-library-2"
+        ],
+        "services": [
+            "common-service-1",
+            "common-service-2"
+        ]
+    },
+    "configDefaults": {
+        "settings": {
+            "defaultKey1": "defaultValue1",
+            "defaultKey2": "defaultValue2"
+        }
+    }
+}

@@ -1,0 +1,90 @@
+{
+    "agent_name": "PR-CYBR-FRONTEND-AGENT",
+    "repository": "https://github.com/PR-CYBR/PR-CYBR-FRONTEND-AGENT",
+    "docker": {
+      "repository": "https://hub.docker.com/r/prcybr/pr-cybr-frontend-agent",
+      "pull_command": "docker pull prcybr/pr-cybr-frontend-agent"
+    },
+    "description": "AI agent dedicated to designing, developing, and maintaining the user interface and experience (UI/UX) for the PR-CYBR initiative.",
+    "version": "1.0.0",
+    "maintainers": [
+      {
+        "name": "PR-CYBR Team",
+        "email": "support@pr-cybr.com"
+      }
+    ],
+    "dependencies": {
+      "libraries": [
+        "react",
+        "react-router-dom",
+        "axios",
+        "d3",
+        "leaflet"
+      ],
+      "services": [
+        "PR-CYBR-BACKEND-AGENT",
+        "PR-CYBR-DATA-INTEGRATION-AGENT",
+        "PR-CYBR-USER-FEEDBACK-AGENT",
+        "PR-CYBR-SECURITY-AGENT"
+      ]
+    },
+    "config": {
+      "settings": {
+        "accessibility": {
+          "aria_roles": true,
+          "keyboard_navigation": true,
+          "contrast_ratios": "WCAG-compliant"
+        },
+        "performance": {
+          "caching": true,
+          "lazy_loading": true
+        },
+        "localization": {
+          "supported_languages": ["en", "es"],
+          "default_language": "en"
+        },
+        "security": {
+          "content_security_policy": true,
+          "input_validation": true,
+          "secure_storage": "sessionStorage"
+        }
+      },
+      "inter_agent_communication": {
+        "protocols": ["RESTful APIs", "WebSockets"],
+        "authentication": "JWT Tokens",
+        "encryption": "SSL/TLS"
+      }
+    },
+    "functions": [
+      {
+        "name": "render_dashboard",
+        "description": "Renders an interactive dashboard with real-time data visualizations.",
+        "inputs": ["cybersecurity metrics", "geospatial data"],
+        "outputs": ["dashboard view"]
+      },
+      {
+        "name": "update_map_layers",
+        "description": "Dynamically updates map layers based on user inputs.",
+        "inputs": ["user selections", "data filters"],
+        "outputs": ["updated map visualization"]
+      },
+      {
+        "name": "handle_authentication",
+        "description": "Manages user authentication and access control.",
+        "inputs": ["user credentials", "JWT tokens"],
+        "outputs": ["authenticated user session"]
+      },
+      {
+        "name": "fetch_data_from_backend",
+        "description": "Fetches data from backend APIs for rendering UI components.",
+        "inputs": ["API endpoints"],
+        "outputs": ["data objects"]
+      },
+      {
+        "name": "collect_user_feedback",
+        "description": "Gathers feedback from users through embedded forms and interactions.",
+        "inputs": ["feedback forms", "user interactions"],
+        "outputs": ["feedback data"]
+      }
+    ]
+  }

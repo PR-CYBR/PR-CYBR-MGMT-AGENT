@@ -1,0 +1,86 @@
+{
+    "agent_name": "PR-CYBR-DOCUMENTATION-AGENT",
+    "repository": "https://github.com/PR-CYBR/PR-CYBR-DOCUMENTATION-AGENT",
+    "docker": {
+      "repository": "https://hub.docker.com/r/prcybr/pr-cybr-documentation-agent",
+      "pull_command": "docker pull prcybr/pr-cybr-documentation-agent"
+    },
+    "description": "Agent responsible for creating, maintaining, and managing documentation for PR-CYBR systems, ensuring accuracy, accessibility, and usability.",
+    "version": "1.0.0",
+    "maintainers": [
+      {
+        "name": "PR-CYBR Team",
+        "email": "support@pr-cybr.com"
+      }
+    ],
+    "dependencies": {
+      "libraries": [
+        "Markdown Generators",
+        "Static Site Generators",
+        "Natural Language Processing Tools"
+      ],
+      "services": [
+        "PR-CYBR-BACKEND-AGENT",
+        "PR-CYBR-FRONTEND-AGENT",
+        "PR-CYBR-USER-FEEDBACK-AGENT",
+        "PR-CYBR-TESTING-AGENT",
+        "PR-CYBR-CI-CD-AGENT",
+        "PR-CYBR-MGMT-AGENT"
+      ]
+    },
+    "config": {
+      "documentation": {
+        "formats": ["Markdown", "HTML", "PDF"],
+        "version_control": true,
+        "multilingual_support": true
+      },
+      "publishing": {
+        "platforms": ["GitHub Pages", "Static Web Server"],
+        "frequency": "On Demand"
+      },
+      "integration": {
+        "ci_cd_pipeline": true,
+        "user_feedback": true
+      },
+      "accessibility": {
+        "inclusive_design": true,
+        "searchable_knowledge_base": true
+      },
+      "security": {
+        "confidentiality_check": true,
+        "secure_communication": true
+      }
+    },
+    "functions": [
+      {
+        "name": "generate_documentation",
+        "description": "Creates documentation by parsing source code and existing documentation files.",
+        "inputs": ["Source code files", "Existing documentation"],
+        "outputs": ["Generated documentation in Markdown or HTML format"]
+      },
+      {
+        "name": "update_documentation",
+        "description": "Updates existing documentation based on new features, fixes, or feedback.",
+        "inputs": ["Change logs", "User feedback"],
+        "outputs": ["Updated documentation files"]
+      },
+      {
+        "name": "publish_documentation",
+        "description": "Deploys documentation to web servers or repositories for user access.",
+        "inputs": ["Formatted documentation files"],
+        "outputs": ["Published documentation on designated platforms"]
+      },
+      {
+        "name": "analyze_feedback_for_docs",
+        "description": "Incorporates user feedback to improve the quality and coverage of documentation.",
+        "inputs": ["User feedback data"],
+        "outputs": ["Feedback-driven documentation updates"]
+      },
+      {
+        "name": "enforce_documentation_standards",
+        "description": "Ensures documentation adheres to predefined standards and guidelines.",
+        "inputs": ["Documentation content"],
+        "outputs": ["Standardized and consistent documentation"]
+      }
+    ]
+  }
