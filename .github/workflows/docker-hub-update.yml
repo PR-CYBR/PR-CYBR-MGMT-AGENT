@@ -24,7 +24,11 @@ jobs:
 
       - name: build image
         run: |
-          docker build ./config/ -t prcybr/pr-cybr-mgmt-agent:latest
+          set -e
+          TAG=$(echo ${{ github.sha }} | cut -c1-7)
+          docker build ./build/ -t prcybr/pr-cybr-mgmt-agent:${TAG} -t prcybr/pr-cybr-mgmt-agent:latest
+      
       - name: push image to docker hub
         run: |
+          docker push prcybr/pr-cybr-mgmt-agent:${TAG}
           docker push prcybr/pr-cybr-mgmt-agent:latest
