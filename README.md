@@ -1,6 +1,7 @@
 <!--
 Updates to make:
-1. 
+1. Update build workflow
+2. 
 -->
 
 # PR-CYBR-MGMT-AGENT
