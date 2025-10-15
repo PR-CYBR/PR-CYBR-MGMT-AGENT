@@ -1,0 +1,88 @@
+name: CI Container Scan
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  container-scan:
+    if: startsWith(github.head_ref, 'codex')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare reports directory
+        run: mkdir -p reports
+
+      - name: Run Trivy image scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          format: json
+          output: reports/trivy.json
+
+      - name: Run Grype scan
+        uses: anchore/scan-action@v3
+        with:
+          path: .
+          output-format: json
+          output: reports/grype.json
+
+      - name: Upload reports artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: container-scan-reports
+          path: reports/
+
+      - name: Log run to A-10-RUNS-BOARD
+        run: ./scripts/log-to-a10-board.sh "container-security" reports
+        env:
+          A10_RUNS_BOARD_WEBHOOK: ${{ secrets.A10_RUNS_BOARD_WEBHOOK }}
+
+      - name: Notify HITL stakeholders via Slack
+        if: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
+        run: |
+          payload=$(jq -n --arg text ":package: Container scan completed for ${{ github.repository }}@${{ github.sha }}. Reports archived under /reports/." '{text: $text}')
+          curl -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify A-07 in pull request
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const body = [
+              ':package: Container scanning completed.',
+              '',
+              '- Trivy report: `reports/trivy.json`',
+              '- Grype report: `reports/grype.json`',
+              '',
+              'HITL stakeholders and **A-07**: please review and approve the environment gate.'
+            ].join('\n');
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
+
+  require-hitl-approval:
+    if: startsWith(github.head_ref, 'codex')
+    needs: container-scan
+    runs-on: ubuntu-latest
+    environment:
+      name: hitl-container-approval
+    steps:
+      - name: Await HITL approval
+        run: echo "HITL stakeholders must approve the 'hitl-container-approval' environment before merging."
