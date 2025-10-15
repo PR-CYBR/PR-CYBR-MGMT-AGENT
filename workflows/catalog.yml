@@ -1,0 +1,118 @@
+workflows:
+  - id: a10-build-and-test
+    name: Build and Test Pipeline
+    status: active
+    trigger:
+      type: github_action
+      events:
+        - push:
+            branches:
+              - main
+    purpose: >-
+      Validate the main branch by building project containers inside Docker Compose,
+      installing the package, and executing the Python unit test suite. On failures
+      the workflow opens a GitHub issue for investigation.
+    dependencies:
+      runtime:
+        - docker
+        - docker-compose
+        - python
+      secrets:
+        - GITHUB_TOKEN
+      notes:
+        - Relies on container names matching the repository identifier when running docker exec.
+    logging:
+      - destination: github_actions_logs
+        detail: Step output for build and test execution.
+      - destination: github_issues
+        detail: Creates an issue titled "Test Failure on Main" when tests fail.
+    implementation:
+      repository_path: .github/workflows/build-test.yml
+
+  - id: a10-ci-agent-sync
+    name: CI Agent Sync
+    status: active
+    trigger:
+      type: github_action
+      events:
+        - schedule:
+            cron: "0 0 * * *"
+        - workflow_dispatch: {}
+    purpose: >-
+      Keep CI agent configuration in sync by installing Node.js dependencies and
+      executing maintenance commands, including optional nightly quality gates for
+      tests, coverage, and security audits.
+    dependencies:
+      runtime:
+        - nodejs@16
+        - npm
+      secrets: []
+      notes:
+        - Requires project JavaScript dependencies declared in package.json.
+    logging:
+      - destination: github_actions_logs
+        detail: Captures sync activity, audit output, and any notification failures.
+    implementation:
+      repository_path: .github/workflows/ci-agent-sync.yml
+
+  - id: a10-deploy-static-site
+    name: Test and Deploy Static Files
+    status: active
+    trigger:
+      type: github_action
+      events:
+        - push:
+            branches:
+              - main
+        - pull_request:
+            branches:
+              - main
+    purpose: >-
+      Run targeted status-page tests and, after successful validation on the main
+      branch, build static assets and commit them back to the repository for
+      deployment.
+    dependencies:
+      runtime:
+        - nodejs@14
+        - npm
+        - git
+      secrets: []
+      notes:
+        - Requires permissions for the GitHub Actions bot to push commits to main.
+    logging:
+      - destination: github_actions_logs
+        detail: Includes test output, build results, and git push feedback.
+    implementation:
+      repository_path: .github/workflows/deploy.yml
+
+  - id: a10-docker-hub-publish
+    name: Build and Publish image to Docker Hub
+    status: active
+    trigger:
+      type: github_action
+      events:
+        - push:
+            branches:
+              - main
+            paths:
+              - build/Dockerfile
+        - workflow_dispatch: {}
+    purpose: >-
+      Build the PR-CYBR-MGMT-AGENT Docker image and publish both commit-specific and
+      latest tags to Docker Hub whenever the Dockerfile changes or when manually
+      dispatched.
+    dependencies:
+      runtime:
+        - docker
+      secrets:
+        - PR_CYBR_DOCKER_USER
+        - PR_CYBR_DOCKER_PASS
+      notes:
+        - Uses the short commit SHA as an image tag alongside "latest".
+    logging:
+      - destination: github_actions_logs
+        detail: Provides build output and Docker push status for traceability.
+      - destination: docker_hub_repository
+        detail: Published images and tags visible in Docker Hub activity feeds.
+    implementation:
+      repository_path: .github/workflows/docker-hub-update.yml
