@@ -112,6 +112,25 @@ The `PR-CYBR-MGMT-AGENT` integrates with other PR-CYBR agents to provide central
 
   - The agent provides monitoring features to keep track of resource usage and performance metrics.
 
+## Operational Scripts
+
+Two operational scripts are provided to keep the management environment consistent for both interactive operators and automation:
+
+| Script | Purpose | Example |
+| ------ | ------- | ------- |
+| `scripts/setup.sh` | Validates and self-heals core tooling prior to onboarding new workloads. It detects whether it is running manually or in automation, installs missing dependencies when allowed, and verifies services such as Docker and Tailscale. | `./scripts/setup.sh --interactive` |
+| `scripts/maintenance.sh` | Performs recurring health checks for Vault, Tailscale, Docker, and the GitHub CLI. It can rotate its own log files, restart critical services, and surfaces issues through non-zero exit codes for CI systems. | `./scripts/maintenance.sh --automation` |
+
+### Logging and Telemetry
+
+Both scripts:
+
+- Write structured timestamps to `logs/setup.log` and `logs/maintenance.log` (override with `PR_CYBR_LOG_DIR`).
+- Detect execution context automatically (interactive terminal vs. CI/automation) but can be overridden with `--interactive` or `--automation` flags.
+- Mirror every log entry to the optional centralized endpoint (`CENTRAL_LOG_ENDPOINT`) and Slack webhook (`SLACK_WEBHOOK_URL`), ensuring the same visibility for human operators and pipelines.
+- Attempt to self-heal missing dependencies using the available package manager. Set `ALLOW_INSTALL_IN_AUTOMATION=1` to permit installations when the scripts run without a terminal.
+- Exit with a non-zero status when an issue cannot be remediated, allowing CI/CD pipelines to react immediately.
+
 ## License
 
 This project is licensed under the **MIT License**. See the [`LICENSE`](LICENSE) file for details.
