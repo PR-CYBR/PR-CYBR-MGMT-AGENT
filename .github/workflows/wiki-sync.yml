@@ -1,0 +1,154 @@
+name: Wiki Sync
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+      - 'diagrams/**'
+  workflow_dispatch:
+    inputs:
+      bypass_hitl:
+        description: 'Allow wiki update even if HITL approval is enabled.'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+      reason:
+        description: 'Optional reason for manually running the sync.'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  sync:
+    name: Push docs to wiki
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      HITL_APPROVAL_REQUIRED: ${{ vars.HITL_APPROVAL_REQUIRED || 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Initialize wiki update log
+        id: log
+        run: |
+          mkdir -p reports
+          LOG_PATH="$GITHUB_WORKSPACE/reports/wiki-update.log"
+          {
+            echo "[$(date -u +'%Y-%m-%dT%H:%M:%SZ')] Wiki sync workflow triggered."
+            echo "Run ID: $GITHUB_RUN_ID"
+            echo "Event: $GITHUB_EVENT_NAME"
+            echo "Commit: $GITHUB_SHA"
+            if [[ "${{ github.event_name }}" == 'workflow_dispatch' && -n "${{ github.event.inputs.reason }}" ]]; then
+              echo "Reason: ${{ github.event.inputs.reason }}"
+            fi
+          } > "$LOG_PATH"
+          echo "log-path=$LOG_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Evaluate HITL requirement
+        id: hitl
+        env:
+          HITL_FLAG: ${{ env.HITL_APPROVAL_REQUIRED }}
+          BYPASS: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.bypass_hitl == 'true') && 'true' || 'false' }}
+        run: |
+          LOG="${{ steps.log.outputs.log-path }}"
+          hitl_required="${HITL_FLAG,,}"
+          bypass="${BYPASS,,}"
+          if [[ "$hitl_required" == "true" && "$bypass" != "true" ]]; then
+            echo "[$(date -u +'%Y-%m-%dT%H:%M:%SZ')] HITL approval required. Skipping automatic wiki sync." >> "$LOG"
+            echo "approved=false" >> "$GITHUB_OUTPUT"
+          else
+            if [[ "$hitl_required" == "true" ]]; then
+              echo "[$(date -u +'%Y-%m-%dT%H:%M:%SZ')] HITL approval requirement bypassed by dispatcher." >> "$LOG"
+            fi
+            echo "[$(date -u +'%Y-%m-%dT%H:%M:%SZ')] Automatic wiki sync authorized." >> "$LOG"
+            echo "approved=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Post HITL pending notification
+        if: steps.hitl.outputs.approved != 'true'
+        env:
+          LOG_PATH: ${{ steps.log.outputs.log-path }}
+        run: |
+          echo "[$(date -u +'%Y-%m-%dT%H:%M:%SZ')] Notifying reviewers about pending HITL approval." >> "$LOG_PATH"
+          message="Wiki sync run $GITHUB_RUN_ID is awaiting HITL approval. Review the generated log at reports/wiki-update.log in the workflow artifacts and rerun the workflow with the 'bypass_hitl' input set to 'true' once approval is granted."
+          gh api repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/comments \
+            -f body="${message//$'\n'/\\n}"
+          {
+            echo "### HITL approval required" >> "$GITHUB_STEP_SUMMARY"
+            echo "* Workflow run **$GITHUB_RUN_ID** cannot update the wiki because HITL approval is enabled." >> "$GITHUB_STEP_SUMMARY"
+            echo "* Download the `wiki-update.log` artifact for review." >> "$GITHUB_STEP_SUMMARY"
+            echo "* Re-run the workflow from the Actions tab with `bypass_hitl=true` after approval." >> "$GITHUB_STEP_SUMMARY"
+          }
+
+      - name: Sync repository docs to wiki
+        if: steps.hitl.outputs.approved == 'true'
+        env:
+          LOG_PATH: ${{ steps.log.outputs.log-path }}
+        run: |
+          set -euo pipefail
+          echo "[$(date -u +'%Y-%m-%dT%H:%M:%SZ')] Preparing wiki repository clone." >> "$LOG_PATH"
+          if ! git clone "https://github.com/${GITHUB_REPOSITORY}.wiki.git" wiki >> "$LOG_PATH" 2>&1; then
+            echo "[$(date -u +'%Y-%m-%dT%H:%M:%SZ')] Wiki repository clone failed. Ensure the repository wiki is enabled." >> "$LOG_PATH"
+            exit 1
+          fi
+          cd wiki
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          cd ..
+          echo "[$(date -u +'%Y-%m-%dT%H:%M:%SZ')] Synchronizing docs and diagrams." >> "$LOG_PATH"
+          if [[ -d docs ]]; then
+            rsync -av --delete --exclude '.git' docs/ wiki/docs/ >> "$LOG_PATH" 2>&1
+          else
+            echo "[$(date -u +'%Y-%m-%dT%H:%M:%SZ')] No docs directory found to sync." >> "$LOG_PATH"
+            rm -rf wiki/docs
+          fi
+          if [[ -d diagrams ]]; then
+            rsync -av --delete --exclude '.git' diagrams/ wiki/diagrams/ >> "$LOG_PATH" 2>&1
+          else
+            echo "[$(date -u +'%Y-%m-%dT%H:%M:%SZ')] No diagrams directory found to sync." >> "$LOG_PATH"
+            rm -rf wiki/diagrams
+          fi
+          cd wiki
+          echo "[$(date -u +'%Y-%m-%dT%H:%M:%SZ')] Preparing wiki commit." >> "$LOG_PATH"
+          git add .
+          if git diff --cached --quiet; then
+            echo "[$(date -u +'%Y-%m-%dT%H:%M:%SZ')] No wiki changes detected." >> "$LOG_PATH"
+          else
+            git commit -m "Sync wiki from repository docs (run $GITHUB_RUN_ID)"
+            echo "[$(date -u +'%Y-%m-%dT%H:%M:%SZ')] Changes committed." >> "$LOG_PATH"
+            git push origin HEAD
+            echo "[$(date -u +'%Y-%m-%dT%H:%M:%SZ')] Changes pushed to wiki." >> "$LOG_PATH"
+          fi
+
+      - name: Post sync notification
+        if: steps.hitl.outputs.approved == 'true'
+        env:
+          LOG_PATH: ${{ steps.log.outputs.log-path }}
+        run: |
+          status_message="Wiki sync run $GITHUB_RUN_ID completed. Review wiki changes in the repository wiki. Rollback by cloning ${GITHUB_REPOSITORY}.wiki and reverting the commit created by this run if necessary."
+          gh api repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/comments \
+            -f body="${status_message//$'\n'/\\n}"
+          {
+            echo "### Wiki sync summary" >> "$GITHUB_STEP_SUMMARY"
+            echo "* Wiki sync executed successfully." >> "$GITHUB_STEP_SUMMARY"
+            echo "* Download the `wiki-update.log` artifact for a full audit trail." >> "$GITHUB_STEP_SUMMARY"
+            echo "* Rollback: clone the wiki repo and revert the commit pushed by this run." >> "$GITHUB_STEP_SUMMARY"
+          }
+          echo "[$(date -u +'%Y-%m-%dT%H:%M:%SZ')] Notification dispatched." >> "$LOG_PATH"
+
+      - name: Upload wiki update log
+        uses: actions/upload-artifact@v4
+        with:
+          name: wiki-update-log
+          path: ${{ steps.log.outputs.log-path }}
+          if-no-files-found: error
