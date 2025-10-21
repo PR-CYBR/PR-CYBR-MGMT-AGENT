@@ -1,0 +1,10 @@
+dashboard:
+  name: PR-CYBR-MGMT-DASH
+  widgets:
+    - type: status_overview
+      source: reports/status.json
+      refresh: 10m
+    - type: human_loop
+      actions:
+        - manual_task_submit
+        - approve_action
