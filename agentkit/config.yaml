@@ -1,0 +1,22 @@
+agent:
+  name: PR-CYBR-MGMT-AGENT
+  description: Summarise project status, assign tasks, and generate reports.
+  triggers:
+    - type: manual
+      event: "/status"
+    - type: scheduled
+      cron: "0 * * * *"
+  tasks:
+    - id: summarise_status
+      command: "scripts/summarise_status.sh"
+      output: "dashboard:update"
+    - id: assign_tasks
+      command: "scripts/assign_tasks.sh"
+      output: "issue:create"
+    - id: generate_report
+      command: "scripts/generate_report.sh"
+      output: "docs:update"
+  codex_integration:
+    enabled: true
+    fallback: "local_summary"
+    on_fail: "log_warning"
