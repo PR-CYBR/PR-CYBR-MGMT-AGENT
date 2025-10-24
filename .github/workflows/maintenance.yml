@@ -1,34 +1,62 @@
-name: maintenance
+name: orchestrator
 
 on:
-  workflow_dispatch:   # manual trigger
-  schedule:            # optional: run daily at 02:00 UTC
+  workflow_dispatch:
+    inputs:
+      debug:
+        description: "Run in debug mode"
+        required: false
+        default: "false"
+  schedule:
     - cron: "0 2 * * *"
-  push:
-    branches: [ codex, agents, dev ]
-  pull_request:
-    branches: [ main ]
+  repository_dispatch:
+    types: [prcyber_event]
 
 jobs:
-  maintenance:
+  orchestrate:
     runs-on: ubuntu-latest
     container: ubuntu:22.04
+    env:
+      EVENT_PAYLOAD: ${{ toJson(github.event.client_payload) }}
+      DEBUG_MODE: ${{ github.event.inputs.debug || 'false' }}
     steps:
-      - name: Install dependencies
+      - name: 👰 Install dependencies
         run: |
           apt-get update -y
-          apt-get install -y git python3 python3-pip
+          apt-get install -y git python3 python3-pip curl jq
+          pip3 install codex-cli
 
-      - name: Clone repo
-        run: |
-          git clone https://github.com/${{ github.repository }} /workspace
+      - name: 📅 Checkout orchestrator repo
+        uses: actions/checkout@v3
 
-      - name: Run maintenance.py if present
+      - name: 🧑‍🏫 Analyze event with codex
+        id: codex
         run: |
-          cd /workspace
-          if [ -f maintenance.py ]; then
-            echo "🔧 Running maintenance script..."
-            python3 maintenance.py
-          else
-            echo "⚠️ No maintenance.py found, skipping."
-          fi
+          echo "🔍 Invoking codex CLI to determine target agents…"
+          echo "$EVENT_PAYLOAD" | codex analyze \
+            --output-format=json \
+            > /tmp/codex_output.json
+          echo "Codex output:"
+          cat /tmp/codex_output.json
+          AGENT_LIST=$(jq -r '.agents[]?' /tmp/codex_output.json | paste -sd "," -)
+          echo "agent_list=$AGENT_LIST" >> $GITHUB_OUTPUT
+
+      - name: 🗚 Dispatch to target agents
+        if: steps.codex.outputs.agent_list != ''
+        run: |
+          IFS=',' read -ra AGENTS <<< "${{ steps.codex.outputs.agent_list }}"
+          for AGENT in "${AGENTS[@]}"; do
+            echo "🚀 Dispatching event to $AGENT"
+            curl -X POST \
+              -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
+              -H "Accept: application/vnd.github+json" \
+              https://api.github.com/repos/PR-CYBR/${AGENT}/dispatches \
+              -d "{\"event_type\": \"agent_task\", \"client_payload\": $EVENT_PAYLOAD}"
+          done
+        env:
+          EVENT_PAYLOAD: ${{ env.EVENT_PAYLOAD }}
+
+      - name: 💤 No agents needed
+        if: steps.codex.outputs.agent_list == ''
+        run: |
+          echo "😴 Codex did not suggest any agents. Nothing to dispatch."
