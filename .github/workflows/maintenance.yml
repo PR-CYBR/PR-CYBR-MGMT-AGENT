@@ -1,14 +1,17 @@
 name: orchestrator
 
 on:
+  # Manual trigger via Actions UI
   workflow_dispatch:
     inputs:
       debug:
         description: "Run in debug mode"
         required: false
         default: "false"
+  # Scheduled run (e.g., nightly health check)
   schedule:
-    - cron: "0 2 * * *"
+    - cron: "0 2 * * *"  # 02:00 UTC daily
+  # Central trigger from org-level webhook
   repository_dispatch:
     types: [prcyber_event]
 
@@ -20,33 +23,37 @@ jobs:
       EVENT_PAYLOAD: ${{ toJson(github.event.client_payload) }}
       DEBUG_MODE: ${{ github.event.inputs.debug || 'false' }}
     steps:
-      - name: 👰 Install dependencies
+      - name: 🧠 Install dependencies
         run: |
           apt-get update -y
           apt-get install -y git python3 python3-pip curl jq
-          pip3 install codex-cli
+          pip3 install codex-cli  # Replace with actual codex CLI installer if different
 
-      - name: 📅 Checkout orchestrator repo
+      - name: 📋 Checkout orchestrator repo
         uses: actions/checkout@v3
 
-      - name: 🧑‍🏫 Analyze event with codex
+      - name: 🤖 Analyze event with codex
         id: codex
         run: |
           echo "🔍 Invoking codex CLI to determine target agents…"
+          # Assuming codex CLI accepts a JSON payload via stdin and outputs a list of agents
           echo "$EVENT_PAYLOAD" | codex analyze \
             --output-format=json \
             > /tmp/codex_output.json
           echo "Codex output:"
           cat /tmp/codex_output.json
+          # Extract agent list into a GitHub Actions output
           AGENT_LIST=$(jq -r '.agents[]?' /tmp/codex_output.json | paste -sd "," -)
           echo "agent_list=$AGENT_LIST" >> $GITHUB_OUTPUT
 
-      - name: 🗚 Dispatch to target agents
+      - name: 🪄 Dispatch to target agents
         if: steps.codex.outputs.agent_list != ''
         run: |
           IFS=',' read -ra AGENTS <<< "${{ steps.codex.outputs.agent_list }}"
           for AGENT in "${AGENTS[@]}"; do
             echo "🚀 Dispatching event to $AGENT"
+            # Use GitHub API to trigger a repository_dispatch event on the agent repository.
+            # Requires a repository token stored in secrets.GH_TOKEN with repo:public_repo scope.
             curl -X POST \
               -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
               -H "Accept: application/vnd.github+json" \
@@ -56,7 +63,7 @@ jobs:
         env:
           EVENT_PAYLOAD: ${{ env.EVENT_PAYLOAD }}
 
-      - name: 💤 No agents needed
+      - name: 🛌 No agents needed
         if: steps.codex.outputs.agent_list == ''
         run: |
           echo "😴 Codex did not suggest any agents. Nothing to dispatch."
