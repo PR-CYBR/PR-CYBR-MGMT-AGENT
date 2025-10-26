@@ -21,7 +21,7 @@ def run_codex_analyze(payload, output_format="json"):
     if isinstance(payload, dict):
         payload = json.dumps(payload)
     
-    cmd = [sys.executable, codex_path, "analyze", f"--output-format={output_format}"]
+    cmd = [sys.executable, codex_path, "analyze", "--output-format", output_format]
     
     result = subprocess.run(
         cmd,
