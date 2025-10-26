@@ -1,42 +1,77 @@
-name: tfc-sync
+name: terraform-cloud-bridge
 
 on:
   push:
     branches:
-      - codex     # AI-driven commits (Codex Platform)
-      - agents    # Agent-driven inter-repo commits
+      - codex
+      - agents
+    paths:
+      - '**.tf'
+      - '.github/workflows/tfc-sync.yml'
   pull_request:
     branches:
-      - main      # All PRs targeting main branch (HITL control)
+      - main
+    paths:
+      - '**.tf'
+      - '.github/workflows/tfc-sync.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
-  id-token: write   # Prepares for Terraform Cloud OIDC auth
+  id-token: write
+
+concurrency:
+  group: terraform-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TF_CLOUD_ORGANIZATION: ${{ vars.TF_CLOUD_ORGANIZATION }}
+  TF_HOSTNAME: ${{ vars.TF_CLOUD_HOSTNAME }}
+  TF_WORKSPACE: ${{ vars.TF_WORKSPACE }}
+  TF_CONFIGURATION_DIRECTORY: ${{ vars.TF_CONFIGURATION_DIRECTORY || '.' }}
+  TF_PROJECT: ${{ vars.TF_PROJECT }}
 
 jobs:
-  terraform:
+  trigger-terraform-cloud:
+    name: Trigger Terraform Cloud Run
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.AGENT_ACTIONS }}   # PAT stored in TFC
+          fetch-depth: 0
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      - name: Upload configuration to Terraform Cloud
+        id: upload
+        uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1
         with:
-          cli_config_credentials_token: ${{ secrets.TFC_TOKEN }}
+          workspace: ${{ env.TF_WORKSPACE }}
+          directory: ${{ env.TF_CONFIGURATION_DIRECTORY }}
+          speculative: ${{ github.event_name == 'pull_request' || github.ref != 'refs/heads/main' }}
+        env:
+          TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
 
-      # Initialize Terraform
-      - name: Terraform Init
-        run: terraform init
+      - name: Create Terraform Cloud run
+        id: run
+        uses: hashicorp/tfc-workflows-github/actions/create-run@v1
+        with:
+          workspace: ${{ env.TF_WORKSPACE }}
+          configuration_version: ${{ steps.upload.outputs.configuration_version_id }}
+          message: >-
+            GitHub Actions trigger from ${{ github.event_name }} (run ${{ github.run_number }})
+          plan_only: ${{ github.event_name != 'push' || github.ref != 'refs/heads/main' }}
+        env:
+          TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
 
-      # Run plan for validation (always runs)
-      - name: Terraform Plan
-        run: terraform plan -input=false -no-color
+      - name: Output Terraform Cloud run URL
+        run: echo "Terraform Cloud run URL: ${{ steps.run.outputs.run_link }}"
 
-      # Only apply if PR merged into main
-      - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: terraform apply -auto-approve -input=false
+      - name: Ensure successful Terraform Cloud status
+        if: >-
+          (github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.run.outputs.run_status != 'applied') ||
+          ((github.event_name != 'push' || github.ref != 'refs/heads/main') && steps.run.outputs.run_status != 'planned_and_finished')
+        run: |
+          echo "Terraform Cloud run did not finish successfully."
+          echo "Status: ${{ steps.run.outputs.run_status }}"
+          echo "Details: ${{ steps.run.outputs.run_link }}"
+          exit 1
