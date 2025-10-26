@@ -23,21 +23,21 @@ jobs:
       EVENT_PAYLOAD: ${{ toJson(github.event.client_payload) }}
       DEBUG_MODE: ${{ github.event.inputs.debug || 'false' }}
     steps:
+      - name: 📋 Checkout orchestrator repo
+        uses: actions/checkout@v3
+
       - name: 🧠 Install dependencies
         run: |
           apt-get update -y
           apt-get install -y git python3 python3-pip curl jq
-          pip3 install codex-cli  # Replace with actual codex CLI installer if different
-
-      - name: 📋 Checkout orchestrator repo
-        uses: actions/checkout@v3
 
       - name: 🤖 Analyze event with codex
         id: codex
         run: |
           echo "🔍 Invoking codex CLI to determine target agents…"
-          # Assuming codex CLI accepts a JSON payload via stdin and outputs a list of agents
-          echo "$EVENT_PAYLOAD" | codex analyze \
+          # Use the local codex script from the scripts directory
+          chmod +x ./scripts/codex
+          echo "$EVENT_PAYLOAD" | python3 ./scripts/codex analyze \
             --output-format=json \
             > /tmp/codex_output.json
           echo "Codex output:"
