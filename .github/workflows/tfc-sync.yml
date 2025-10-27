@@ -1,31 +1,89 @@
 name: tfc-sync
+
 on:
   push:
     branches:
-      - codex  # AI-driven commits (Codex Platform)
-      - agents  # Agent-driven inter-repo commits
+      - codex     # AI-driven commits (Codex Platform)
+      - agents    # Agent-driven inter-repo commits
   pull_request:
     branches:
-      - main  # All PRs targeting main branch (HITL control)
+      - main      # All PRs targeting main branch (HITL control)
+
 permissions:
   contents: read
-  id-token: write    # Prepares for Terraform Cloud OIDC auth
+  id-token: write   # Prepares for Terraform Cloud OIDC auth
+
 jobs:
   terraform:
     runs-on: ubuntu-latest
+    env:
+      # Terraform Cloud organization/workspace identifiers
+      TFC_ORG: pr_cybr
+      TFC_WORKSPACE: A-10
+      TFC_API_URL: https://app.terraform.io/api/v2
+      TFC_TOKEN: ${{ secrets.TFC_TOKEN }}
+      # GitHub secrets scoped for agent-level sync
+      AGENT_ACTIONS: ${{ secrets.AGENT_ACTIONS }}
+      NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+      NOTION_PAGE_ID: ${{ secrets.NOTION_PAGE_ID }}
+      NOTION_DISCUSSIONS_ARC_DB_ID: ${{ secrets.NOTION_DISCUSSIONS_ARC_DB_ID }}
+      NOTION_ISSUES_BACKLOG_DB_ID: ${{ secrets.NOTION_ISSUES_BACKLOG_DB_ID }}
+      NOTION_KNOWLEDGE_FILE_DB_ID: ${{ secrets.NOTION_KNOWLEDGE_FILE_DB_ID }}
+      NOTION_PR_BACKLOG_DB_ID: ${{ secrets.NOTION_PR_BACKLOG_DB_ID }}
+      NOTION_PROJECT_BOARD_BACKLOG_DB_ID: ${{ secrets.NOTION_PROJECT_BOARD_BACKLOG_DB_ID }}
+      NOTION_TASK_BACKLOG_DB_ID: ${{ secrets.NOTION_TASK_BACKLOG_DB_ID }}
+
     steps:
-      - name: Checkout repo
+      - name: 📦 Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}  # PAT stored in TFC
-      - name: Setup Terraform
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🧠 Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           cli_config_credentials_token: ${{ secrets.TFC_TOKEN }}
-      - name: Terraform Init
+
+      - name: 🔍 Fetch workspace variables from Terraform Cloud
+        id: tf-vars
+        run: |
+          echo "Fetching variables from Terraform Cloud workspace: $TFC_WORKSPACE"
+          curl -s \
+            --header "Authorization: Bearer $TFC_TOKEN" \
+            --header "Content-Type: application/vnd.api+json" \
+            "$TFC_API_URL/organizations/$TFC_ORG/workspaces/$TFC_WORKSPACE/vars" \
+            | jq -r '.data[].attributes.key' > workspace_vars.txt
+
+          echo "Variables defined in Terraform Cloud:"
+          cat workspace_vars.txt
+
+      - name: 🧹 Export matching workspace variables to environment
+        run: |
+          echo "Syncing environment variables..."
+          while read -r key; do
+            # Check if variable exists as a GitHub Actions env var or secret
+            if [ -n "${!key}" ]; then
+              echo "✅ Exporting $key"
+              echo "$key=${!key}" >> $GITHUB_ENV
+            else
+              echo "⚠️ Skipping undefined variable: $key"
+            fi
+          done < workspace_vars.txt
+
+      - name: 🧩 Terraform Init
         run: terraform init
-      - name: Terraform Plan
+
+      - name: 🧮 Terraform Plan
         run: terraform plan -input=false -no-color
-      - name: Terraform Apply
+
+      - name: 🚀 Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply -auto-approve -input=false
+
+      - name: 🧾 Summary Log
+        if: always()
+        run: |
+          echo "=============================="
+          echo "Synced environment variables:"
+          printenv | grep NOTION || true
+          echo "=============================="
