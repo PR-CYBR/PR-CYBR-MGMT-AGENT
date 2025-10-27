@@ -18,28 +18,26 @@ on:
 jobs:
   orchestrate:
     runs-on: ubuntu-latest
-    container: ubuntu:22.04
     env:
       EVENT_PAYLOAD: ${{ toJson(github.event.client_payload) }}
       DEBUG_MODE: ${{ github.event.inputs.debug || 'false' }}
     steps:
+      - name: 📋 Checkout orchestrator repo
+        uses: actions/checkout@v4
+
       - name: 🧠 Install dependencies
         run: |
-          apt-get update -y
-          apt-get install -y git python3 python3-pip curl jq
-          pip3 install codex-cli  # Replace with actual codex CLI installer if different
-
-      - name: 📋 Checkout orchestrator repo
-        uses: actions/checkout@v3
+          sudo apt-get update -y
+          sudo apt-get install -y python3 python3-pip jq
+          pip3 install --upgrade pip
+          pip3 install -r requirements.txt || true
 
       - name: 🤖 Analyze event with codex
         id: codex
         run: |
           echo "🔍 Invoking codex CLI to determine target agents…"
           # Assuming codex CLI accepts a JSON payload via stdin and outputs a list of agents
-          echo "$EVENT_PAYLOAD" | codex analyze \
-            --output-format=json \
-            > /tmp/codex_output.json
+          echo "$EVENT_PAYLOAD" | python3 ./scripts/codex analyze --output /tmp/codex_output.json
           echo "Codex output:"
           cat /tmp/codex_output.json
           # Extract agent list into a GitHub Actions output
