@@ -23,7 +23,13 @@ jobs:
       TFC_API_URL: https://app.terraform.io/api/v2
       TFC_TOKEN: ${{ secrets.TFC_TOKEN }}
       # GitHub secrets scoped for agent-level sync
+      AGENT_ID: ${{ secrets.AGENT_ID }}
       AGENT_ACTIONS: ${{ secrets.AGENT_ACTIONS }}
+      PR_CYBR_DOCKER_USER: ${{ secrets.PR_CYBR_DOCKER_USER }}
+      PR_CYBR_DOCKER_PASS: ${{ secrets.PR_CYBR_DOCKER_PASS }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      GLOBAL_DOMAIN: ${{ secrets.GLOBAL_DOMAIN }}
       NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
       NOTION_PAGE_ID: ${{ secrets.NOTION_PAGE_ID }}
       NOTION_DISCUSSIONS_ARC_DB_ID: ${{ secrets.NOTION_DISCUSSIONS_ARC_DB_ID }}
