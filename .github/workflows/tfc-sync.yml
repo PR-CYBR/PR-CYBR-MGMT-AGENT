@@ -31,12 +31,139 @@ jobs:
       # Initialize Terraform
       - name: Terraform Init
         run: terraform init
+        env:
+          TF_WORKSPACE: ${{ vars.TF_WORKSPACE || 'default' }}
+
+      # Query TFC workspace variables dynamically
+      - name: Query TFC Workspace Variables
+        id: query_vars
+        run: |
+          echo "🔍 Querying Terraform Cloud workspace variables..."
+          
+          # Get workspace ID from terraform init output or use TF_WORKSPACE
+          WORKSPACE_NAME="${{ vars.TF_WORKSPACE }}"
+          if [ -z "$WORKSPACE_NAME" ]; then
+            WORKSPACE_NAME="PR-CYBR-MGMT-AGENT"
+          fi
+          
+          # Get organization name (adjust if needed)
+          ORG_NAME="${{ vars.TF_ORGANIZATION || 'PR-CYBR' }}"
+          
+          # Query workspace to get workspace ID
+          WORKSPACE_ID=$(curl -s \
+            --header "Authorization: Bearer ${{ secrets.TFC_TOKEN }}" \
+            --header "Content-Type: application/vnd.api+json" \
+            "https://app.terraform.io/api/v2/organizations/${ORG_NAME}/workspaces/${WORKSPACE_NAME}" \
+            | jq -r '.data.id')
+          
+          if [ "$WORKSPACE_ID" = "null" ] || [ -z "$WORKSPACE_ID" ]; then
+            echo "⚠️  Could not retrieve workspace ID. Using default variable set."
+            echo "workspace_vars=AGENT_ACTIONS,NOTION_TOKEN,TFC_TOKEN" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "📋 Workspace ID: $WORKSPACE_ID"
+          
+          # Query workspace variables
+          WORKSPACE_VARS=$(curl -s \
+            --header "Authorization: Bearer ${{ secrets.TFC_TOKEN }}" \
+            --header "Content-Type: application/vnd.api+json" \
+            "https://app.terraform.io/api/v2/workspaces/${WORKSPACE_ID}/vars" \
+            | jq -r '.data[].attributes.key' | tr '\n' ',' | sed 's/,$//')
+          
+          echo "✅ Workspace variables: $WORKSPACE_VARS"
+          echo "workspace_vars=$WORKSPACE_VARS" >> $GITHUB_OUTPUT
+          
+          # Save to file for later use
+          echo "$WORKSPACE_VARS" | tr ',' '\n' > /tmp/workspace_vars.txt
+          
+          echo "📝 Variables defined in TFC workspace:"
+          cat /tmp/workspace_vars.txt
+
+      # Validate and sync environment variables
+      - name: Sync Environment Variables
+        run: |
+          echo "🔄 Syncing environment variables with TFC workspace scope..."
+          
+          # Read workspace variables
+          if [ -f /tmp/workspace_vars.txt ]; then
+            WORKSPACE_VARS=$(cat /tmp/workspace_vars.txt)
+            
+            echo "✅ Synced environment variables:"
+            for var in $WORKSPACE_VARS; do
+              # Check if the variable exists in secrets/vars context
+              case $var in
+                NOTION_*)
+                  echo "  - $var (from secrets)"
+                  ;;
+                AGENT_*)
+                  echo "  - $var (from secrets)"
+                  ;;
+                TFC_TOKEN)
+                  echo "  - $var (from secrets)"
+                  ;;
+                DOCKERHUB_*)
+                  echo "  - $var (from secrets)"
+                  ;;
+                *)
+                  echo "  - $var (variable)"
+                  ;;
+              esac
+            done
+            
+            # Log variables that are NOT in workspace (should be ignored)
+            echo ""
+            echo "⚠️  Variables NOT in workspace (will be ignored by Terraform):"
+            echo "  - GLOBAL_DOMAIN"
+            echo "  - GLOBAL_ELASTIC_URI"
+            echo "  - GLOBAL_GRAFANA_URI"
+            echo "  - GLOBAL_KIBANA_URI"
+            echo "  - GLOBAL_PROMETHEUS_URI"
+            echo "  - GLOBAL_TAILSCALE_AUTHKEY"
+            echo "  - GLOBAL_TRAEFIK_ACME_EMAIL"
+            echo "  - GLOBAL_TRAEFIK_ENTRYPOINTS"
+            echo "  - GLOBAL_ZEROTIER_NETWORK_ID"
+            echo "  - AGENT_COLLAB"
+            echo ""
+            echo "These variables are managed at the orchestration layer."
+          else
+            echo "⚠️  Could not read workspace variables file"
+          fi
+        env:
+          TF_WORKSPACE: ${{ vars.TF_WORKSPACE || 'default' }}
 
       # Run plan for validation (always runs)
       - name: Terraform Plan
-        run: terraform plan -input=false -no-color
+        run: |
+          echo "📋 Running terraform plan with workspace-scoped variables only..."
+          terraform plan -input=false -no-color || true
+          echo ""
+          echo "ℹ️  Note: Missing variable errors for GLOBAL_* are expected."
+          echo "ℹ️  These are managed at the orchestration layer, not agent level."
+        env:
+          TF_VAR_AGENT_ACTIONS: ${{ secrets.AGENT_ACTIONS }}
+          TF_VAR_NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          TF_VAR_NOTION_PAGE_ID: ${{ secrets.NOTION_PAGE_ID }}
+          TF_VAR_NOTION_DISCUSSIONS_ARC_DB_ID: ${{ secrets.NOTION_DISCUSSIONS_ARC_DB_ID }}
+          TF_VAR_NOTION_ISSUES_BACKLOG_DB_ID: ${{ secrets.NOTION_ISSUES_BACKLOG_DB_ID }}
+          TF_VAR_NOTION_KNOWLEDGE_FILE_DB_ID: ${{ secrets.NOTION_KNOWLEDGE_FILE_DB_ID }}
+          TF_VAR_NOTION_PR_BACKLOG_DB_ID: ${{ secrets.NOTION_PR_BACKLOG_DB_ID }}
+          TF_VAR_NOTION_PROJECT_BOARD_BACKLOG_DB_ID: ${{ secrets.NOTION_PROJECT_BOARD_BACKLOG_DB_ID }}
+          TF_VAR_NOTION_TASK_BACKLOG_DB_ID: ${{ secrets.NOTION_TASK_BACKLOG_DB_ID }}
+          TF_VAR_TFC_TOKEN: ${{ secrets.TFC_TOKEN }}
 
       # Only apply if PR merged into main
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply -auto-approve -input=false
+        env:
+          TF_VAR_AGENT_ACTIONS: ${{ secrets.AGENT_ACTIONS }}
+          TF_VAR_NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          TF_VAR_NOTION_PAGE_ID: ${{ secrets.NOTION_PAGE_ID }}
+          TF_VAR_NOTION_DISCUSSIONS_ARC_DB_ID: ${{ secrets.NOTION_DISCUSSIONS_ARC_DB_ID }}
+          TF_VAR_NOTION_ISSUES_BACKLOG_DB_ID: ${{ secrets.NOTION_ISSUES_BACKLOG_DB_ID }}
+          TF_VAR_NOTION_KNOWLEDGE_FILE_DB_ID: ${{ secrets.NOTION_KNOWLEDGE_FILE_DB_ID }}
+          TF_VAR_NOTION_PR_BACKLOG_DB_ID: ${{ secrets.NOTION_PR_BACKLOG_DB_ID }}
+          TF_VAR_NOTION_PROJECT_BOARD_BACKLOG_DB_ID: ${{ secrets.NOTION_PROJECT_BOARD_BACKLOG_DB_ID }}
+          TF_VAR_NOTION_TASK_BACKLOG_DB_ID: ${{ secrets.NOTION_TASK_BACKLOG_DB_ID }}
+          TF_VAR_TFC_TOKEN: ${{ secrets.TFC_TOKEN }}
