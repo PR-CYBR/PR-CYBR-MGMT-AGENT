@@ -17,6 +17,17 @@ variable "DOCKERHUB_USERNAME" {
   description = "Docker Hub username"
 }
 
+variable "PR_CYBR_DOCKER_PASS" {
+  type        = string
+  sensitive   = true
+  description = "GitHub Actions secret for pushing Docker images"
+}
+
+variable "PR_CYBR_DOCKER_USER" {
+  type        = string
+  description = "Docker Hub account used for publishing images"
+}
+
 # --- Global Infrastructure URIs ---
 variable "GLOBAL_DOMAIN" {
   type        = string
@@ -77,4 +88,71 @@ variable "AGENT_COLLAB" {
   type        = string
   sensitive   = true
   description = "Token for governance, discussions, issues, project boards"
+}
+
+# --- GitHub / Terraform Cloud Auth ---
+variable "GH_TOKEN" {
+  type        = string
+  sensitive   = true
+  description = "Repository token for dispatching cross-agent workflows"
+}
+
+variable "GITHUB_TOKEN" {
+  type        = string
+  sensitive   = true
+  description = "Automation token for repository operations"
+}
+
+variable "TFC_TOKEN" {
+  type        = string
+  sensitive   = true
+  description = "Terraform Cloud API token used by the tfc-sync workflow"
+}
+
+# --- Notion Integrations ---
+variable "NOTION_DISCUSSIONS_ARC_DB_ID" {
+  type        = string
+  description = "Database identifier for the discussions archive"
+}
+
+variable "NOTION_ISSUES_BACKLOG_DB_ID" {
+  type        = string
+  description = "Database identifier for the issues backlog"
+}
+
+variable "NOTION_KNOWLEDGE_FILE_DB_ID" {
+  type        = string
+  description = "Database identifier for the knowledge file catalog"
+}
+
+variable "NOTION_PAGE_ID" {
+  type        = string
+  description = "Workspace page that anchors the management portal"
+}
+
+variable "NOTION_PR_BACKLOG_DB_ID" {
+  type        = string
+  description = "Database identifier for the pull request backlog"
+}
+
+variable "NOTION_PROJECT_BOARD_BACKLOG_DB_ID" {
+  type        = string
+  description = "Database identifier for the project board backlog"
+}
+
+variable "NOTION_TASK_BACKLOG_DB_ID" {
+  type        = string
+  description = "Database identifier for the task backlog"
+}
+
+variable "NOTION_TOKEN" {
+  type        = string
+  sensitive   = true
+  description = "Integration token used to access Notion workspaces"
+}
+
+# --- Assistant Runtime ---
+variable "ASSISTANT_ID" {
+  type        = string
+  description = "Default assistant identifier used by management automations"
 }
