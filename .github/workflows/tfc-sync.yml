@@ -17,21 +17,11 @@ jobs:
   terraform:
     runs-on: ubuntu-latest
     env:
-      # Terraform Cloud organization/workspace identifiers
       TFC_ORG: pr_cybr
       TFC_WORKSPACE: A-10
       TFC_API_URL: https://app.terraform.io/api/v2
-      TFC_TOKEN: ${{ secrets.TFC_TOKEN }}
-      # GitHub secrets scoped for agent-level sync
-      AGENT_ACTIONS: ${{ secrets.AGENT_ACTIONS }}
-      NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
-      NOTION_PAGE_ID: ${{ secrets.NOTION_PAGE_ID }}
-      NOTION_DISCUSSIONS_ARC_DB_ID: ${{ secrets.NOTION_DISCUSSIONS_ARC_DB_ID }}
-      NOTION_ISSUES_BACKLOG_DB_ID: ${{ secrets.NOTION_ISSUES_BACKLOG_DB_ID }}
-      NOTION_KNOWLEDGE_FILE_DB_ID: ${{ secrets.NOTION_KNOWLEDGE_FILE_DB_ID }}
-      NOTION_PR_BACKLOG_DB_ID: ${{ secrets.NOTION_PR_BACKLOG_DB_ID }}
-      NOTION_PROJECT_BOARD_BACKLOG_DB_ID: ${{ secrets.NOTION_PROJECT_BOARD_BACKLOG_DB_ID }}
-      NOTION_TASK_BACKLOG_DB_ID: ${{ secrets.NOTION_TASK_BACKLOG_DB_ID }}
+      TF_VAR_TFC_TOKEN: ${{ secrets.TFC_TOKEN }}
+      TF_VAR_NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
 
     steps:
       - name: 📦 Checkout repository
@@ -46,6 +36,8 @@ jobs:
 
       - name: 🔍 Fetch workspace variables from Terraform Cloud
         id: tf-vars
+        env:
+          TFC_TOKEN: ${{ secrets.TFC_TOKEN }}
         run: |
           echo "Fetching variables from Terraform Cloud workspace: $TFC_WORKSPACE"
           curl -s \
@@ -71,13 +63,16 @@ jobs:
           done < workspace_vars.txt
 
       - name: 🧩 Terraform Init
+        working-directory: ./infra
         run: terraform init
 
       - name: 🧮 Terraform Plan
+        working-directory: ./infra
         run: terraform plan -input=false -no-color
 
       - name: 🚀 Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        working-directory: ./infra
         run: terraform apply -auto-approve -input=false
 
       - name: 🧾 Summary Log
