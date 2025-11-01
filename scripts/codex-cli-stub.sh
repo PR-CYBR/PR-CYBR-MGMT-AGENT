@@ -27,7 +27,7 @@ case "$COMMAND" in
       esac
     done
 
-    # Read input from stdin if available
+    # Read input from stdin if available (for future use with real implementation)
     if [ -t 0 ]; then
       INPUT=""
     else
@@ -37,7 +37,8 @@ case "$COMMAND" in
     # Generate mock output based on format
     if [ "$OUTPUT_FORMAT" = "json" ]; then
       # Return a mock JSON response with no agents (safe default)
-      echo '{"agents": [], "analysis": "Mock analysis - no agents needed", "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}'
+      TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+      echo '{"agents": [], "analysis": "Mock analysis - no agents needed", "timestamp": "'$TIMESTAMP'"}'
     else
       echo "Mock analysis completed. No target agents identified."
     fi
